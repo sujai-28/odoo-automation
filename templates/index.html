@@ -406,7 +406,7 @@ body {
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
       History Logs
     </div>
-    <div class="nav-item">
+    <div class="nav-item" id="nav-settings" onclick="switchView('settings', this)">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
       System Settings
     </div>
@@ -1046,6 +1046,85 @@ body {
     </div>
   </div>
 
+  <!-- SYSTEM SETTINGS VIEW -->
+  <div class="content-body" id="view-settings" style="display: none;">
+    <div class="page-header">
+      <h1 class="page-title">System Settings</h1>
+      <p class="page-desc">Manage Ginesys operators and system configuration.</p>
+    </div>
+
+    <!-- Operator Management Card -->
+    <div class="step-card active" style="margin-top: 24px;">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">01</span>
+          <div>
+            <span class="step-title">Ginesys Operators</span>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Add, view, and manage authorized Ginesys operators for Transfer Out processing.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operator List -->
+      <div id="settings-operator-list" style="margin-top: 16px;">
+        <div style="text-align: center; padding: 24px; color: var(--text-muted);">Loading operators...</div>
+      </div>
+
+      <!-- Add Operator Form -->
+      <div style="margin-top: 24px; padding: 20px; background: rgba(99,102,241,0.04); border-radius: 14px; border: 1px dashed rgba(99,102,241,0.2);">
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">Add New Operator</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Display Name</label>
+            <input type="text" id="set-op-display" placeholder="e.g. Ahamatha Marliya" style="width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); font-family:'Outfit',sans-serif; font-size:14px; outline:none;" />
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Ginesys Username</label>
+            <input type="text" id="set-op-guser" placeholder="Ginesys login username" style="width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); font-family:'Outfit',sans-serif; font-size:14px; outline:none;" />
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Ginesys Password</label>
+            <input type="password" id="set-op-gpass" placeholder="Ginesys login password" style="width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); font-family:'Outfit',sans-serif; font-size:14px; outline:none;" />
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Ginesys User Code</label>
+            <input type="number" id="set-op-code" placeholder="e.g. 763373" style="width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); font-family:'Outfit',sans-serif; font-size:14px; outline:none;" />
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Role</label>
+            <select id="set-op-role" style="width:100%; margin-top:6px; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); font-family:'Outfit',sans-serif; font-size:14px; outline:none;">
+              <option value="operator">Operator</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button type="button" class="btn" id="btn-add-operator" onclick="addOperator()" style="width:100%; padding:12px 20px; font-size:14px; background:var(--brand-green); justify-content:center; border-radius:10px;">
+              <div class="spinner" id="spin-add-op" style="width:16px; height:16px;"></div>
+              <span id="txt-add-op">+ Add Operator</span>
+            </button>
+          </div>
+        </div>
+        <div id="add-op-alert" style="display:none; margin-top:12px; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:600;"></div>
+      </div>
+    </div>
+
+    <!-- Config Overview Card -->
+    <div class="step-card active" style="margin-top: 24px;">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">02</span>
+          <div>
+            <span class="step-title">Ginesys Configuration</span>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Current configuration loaded from Ginesys_Config.xlsx and environment variables.</p>
+          </div>
+        </div>
+      </div>
+      <div id="settings-config-info" style="margin-top: 16px;">
+        <div style="text-align: center; padding: 24px; color: var(--text-muted);">Loading configuration...</div>
+      </div>
+    </div>
+  </div>
+
 </div> <!-- /main-wrapper -->
 
 <script>
@@ -1075,20 +1154,28 @@ const state = {
 function switchView(viewName, el) {
   document.querySelectorAll('.sidebar .nav-item').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
-  
+
+  // Hide all views first
+  document.getElementById('view-integration').style.display = 'none';
+  document.getElementById('view-history').style.display = 'none';
+  document.getElementById('view-settings').style.display = 'none';
+
   if (viewName === 'integration') {
     document.getElementById('view-integration').style.display = 'block';
-    document.getElementById('view-history').style.display = 'none';
     if (state.channel === 'GINESYS') {
       document.getElementById('top-title').textContent = 'Ginesys Transfer Out';
     } else {
       document.getElementById('top-title').textContent = 'Sales Generation';
     }
   } else if (viewName === 'history') {
-    document.getElementById('view-integration').style.display = 'none';
     document.getElementById('view-history').style.display = 'block';
     document.getElementById('top-title').textContent = 'History Logs';
     loadHistory();
+  } else if (viewName === 'settings') {
+    document.getElementById('view-settings').style.display = 'block';
+    document.getElementById('top-title').textContent = 'System Settings';
+    loadSettingsOperators();
+    loadSettingsConfig();
   }
 }
 
@@ -1265,6 +1352,149 @@ async function fetchGinesysOperators() {
     }
   }
 }
+
+// ── System Settings JS ──────────────────────────────────────────────────────
+async function loadSettingsOperators() {
+  const container = document.getElementById('settings-operator-list');
+  try {
+    const res = await fetch('/api/ginesys/operators');
+    const data = await res.json();
+    if (!data.success || !data.operators || data.operators.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted);">No operators configured yet. Add one below.</div>';
+      return;
+    }
+    container.innerHTML = data.operators.map(op => {
+      const statusColor = op.ginesys_connection_status === 'connected' ? '#10b981' :
+                           op.ginesys_connection_status === 'failed' ? '#ef4444' : '#f59e0b';
+      const statusLabel = op.ginesys_connection_status === 'connected' ? 'Connected' :
+                           op.ginesys_connection_status === 'failed' ? 'Failed' : 'Not Tested';
+      const roleBadge = op.role === 'admin'
+        ? '<span style="padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:rgba(99,102,241,0.1); color:#6366f1;">ADMIN</span>'
+        : '<span style="padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:rgba(107,114,128,0.1); color:#6b7280;">OPERATOR</span>';
+      const errorLine = op.ginesys_last_error
+        ? `<div style="margin-top:6px; font-size:12px; color:#ef4444; word-break:break-all;">${esc(op.ginesys_last_error.split('|')[1] || op.ginesys_last_error)}</div>`
+        : '';
+      return `<div style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; margin-bottom:10px; background:#fff; border-radius:12px; border:1px solid var(--border-color); transition:var(--transition);" onmouseover="this.style.borderColor='var(--brand-navy)'" onmouseout="this.style.borderColor='var(--border-color)'">
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-weight:700; font-size:15px; color:var(--text-main);">${esc(op.display_name || op.username)}</span>
+            ${roleBadge}
+            <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:${statusColor};">
+              <span style="width:8px; height:8px; border-radius:50%; background:${statusColor}; display:inline-block;"></span>
+              ${statusLabel}
+            </span>
+          </div>
+          <div style="margin-top:4px; font-size:13px; color:var(--text-muted);">
+            Ginesys: <strong>${esc(op.ginesys_username)}</strong> &nbsp;|&nbsp; Code: <strong>${op.ginesys_user_code}</strong> &nbsp;|&nbsp; ID: ${op.id}
+          </div>
+          ${errorLine}
+        </div>
+        <button onclick="deleteOperator(${op.id}, '${esc(op.display_name || op.username)}')" style="padding:8px 14px; border:1px solid #fca5a5; border-radius:8px; background:#fef2f2; color:#dc2626; font-size:12px; font-weight:600; cursor:pointer; font-family:'Outfit',sans-serif; transition:var(--transition);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">Delete</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = '<div style="text-align:center; padding:24px; color:#ef4444;">Failed to load operators: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function addOperator() {
+  const btn = document.getElementById('btn-add-operator');
+  const spin = document.getElementById('spin-add-op');
+  const txt = document.getElementById('txt-add-op');
+  const alertBox = document.getElementById('add-op-alert');
+  const displayName = document.getElementById('set-op-display').value.trim();
+  const gUser = document.getElementById('set-op-guser').value.trim();
+  const gPass = document.getElementById('set-op-gpass').value;
+  const gCode = document.getElementById('set-op-code').value;
+  const role = document.getElementById('set-op-role').value;
+
+  if (!displayName || !gUser) {
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#fef2f2'; alertBox.style.color = '#991b1b'; alertBox.style.border = '1px solid #fca5a5';
+    alertBox.textContent = 'Display Name and Ginesys Username are required.';
+    return;
+  }
+
+  btn.disabled = true; spin.style.display = 'block'; txt.textContent = 'Adding...'; alertBox.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/ginesys/operators', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        display_name: displayName,
+        ginesys_username: gUser,
+        ginesys_password: gPass || undefined,
+        ginesys_user_code: gCode ? parseInt(gCode) : 0,
+        role: role
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#ecfdf5'; alertBox.style.color = '#065f46'; alertBox.style.border = '1px solid #86efac';
+    alertBox.textContent = 'Operator added successfully!';
+    // Clear form
+    document.getElementById('set-op-display').value = '';
+    document.getElementById('set-op-guser').value = '';
+    document.getElementById('set-op-gpass').value = '';
+    document.getElementById('set-op-code').value = '';
+    document.getElementById('set-op-role').value = 'operator';
+    // Reload list
+    await loadSettingsOperators();
+  } catch (e) {
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#fef2f2'; alertBox.style.color = '#991b1b'; alertBox.style.border = '1px solid #fca5a5';
+    alertBox.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false; spin.style.display = 'none'; txt.textContent = '+ Add Operator';
+  }
+}
+
+async function deleteOperator(opId, name) {
+  if (!confirm('Delete operator "' + name + '"? This cannot be undone.')) return;
+  try {
+    const res = await fetch('/api/ginesys/operators/' + opId, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    await loadSettingsOperators();
+  } catch (e) {
+    alert('Failed to delete operator: ' + e.message);
+  }
+}
+
+async function loadSettingsConfig() {
+  const container = document.getElementById('settings-config-info');
+  try {
+    const res = await fetch('/api/ginesys/config');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    const rows = [
+      ['Base URL', data.baseUrl],
+      ['Owner Site Code', data.ownerSiteCode],
+      ['DC Doc Code', data.dcDocCode],
+      ['Out Stock Point Code', data.outStockPointCode],
+      ['Doc Scheme (Same State)', data.docSchemeTN],
+      ['Doc Scheme (Interstate)', data.docSchemeInterstate],
+      ['Discount Factor', data.discountFactor],
+      ['Site Count', data.siteCount]
+    ];
+    let warningsHtml = '';
+    if (data.warnings && data.warnings.length > 0) {
+      warningsHtml = '<div style="margin-top:12px; padding:10px 14px; border-radius:8px; background:#fefce8; border:1px solid #fde047; color:#854d0e; font-size:13px;"><strong>Warnings:</strong><ul style="margin:4px 0 0 16px;">' +
+        data.warnings.map(w => '<li>' + esc(w) + '</li>').join('') + '</ul></div>';
+    }
+    container.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      ${rows.map(([k,v]) => `<div style="padding:10px 14px; background:rgba(99,102,241,0.03); border-radius:10px; border:1px solid var(--border-color);">
+        <div style="font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">${esc(k)}</div>
+        <div style="font-size:15px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(v ?? 'N/A')}</div>
+      </div>`).join('')}
+    </div>${warningsHtml}`;
+  } catch (e) {
+    container.innerHTML = '<div style="text-align:center; padding:24px; color:#ef4444;">Failed to load config: ' + esc(e.message) + '</div>';
+  }
+}
+
 
 async function fetchGinesysConfig() {
   try {

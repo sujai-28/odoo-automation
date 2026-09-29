@@ -843,6 +843,35 @@ def api_ginesys_operators():
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/ginesys/operators", methods=["POST"])
+@login_required
+def api_ginesys_operators_create():
+    try:
+        data = request.get_json(silent=True) or {}
+        user = ginesys_auth_store.create_user(
+            username=data.get("username") or data.get("ginesys_username"),
+            display_name=data.get("display_name") or data.get("ginesys_username"),
+            password=data.get("password") or None,
+            ginesys_user_code=data.get("ginesys_user_code") or 0,
+            ginesys_username=data.get("ginesys_username"),
+            ginesys_password=data.get("ginesys_password"),
+            role=data.get("role", "admin"),
+        )
+        return jsonify({"success": True, "user": user})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 400
+
+@app.route("/api/ginesys/operators/<int:operator_id>", methods=["DELETE"])
+@login_required
+def api_ginesys_operators_delete(operator_id):
+    try:
+        ginesys_auth_store.delete_user(operator_id)
+        return jsonify({"success": True})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 400
+
 @app.route("/api/ginesys/config", methods=["GET"])
 @login_required
 def api_ginesys_config():

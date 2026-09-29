@@ -13,6 +13,7 @@ Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/.env
 # Databases (ephemeral / local only)
 history.db
 *.db
+!Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal.db
 
 # Local runtime data
 Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/jobs/*
@@ -32,3 +33,5 @@ node_modules/
 
 # Vercel
 .vercel/
+
+.vercel

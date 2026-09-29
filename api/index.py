@@ -49,9 +49,18 @@ _js.RESULTS = TMP / "portal-data" / "results"
 _js.UPLOADS = TMP / "portal-data" / "uploads"
 
 # ── 4. Patch auth_store DB path to /tmp ─────────────────────────────────────
+import shutil
 import auth_store as _as
 _as.DB_PATH = TMP / "portal.db"
 _as.SESSION_SECRET_PATH = TMP / "portal-data" / "session_secret.key"
+
+# ── 4b. Seed portal.db from bundled copy on cold start ──────────────────────
+# The repo ships a portal.db with pre-configured operators.  On Vercel the
+# filesystem under /var is read-only but we can copy the file to /tmp so that
+# operators are available immediately without manual re-creation.
+_SEED_DB = GINESYS / "portal.db"
+if _SEED_DB.exists() and not (TMP / "portal.db").exists():
+    shutil.copy2(_SEED_DB, TMP / "portal.db")
 
 # ── 5. Import the main Flask application ────────────────────────────────────
 # app.py at the project root is the real application
