@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+portal-data/jobs/*
+portal-data/results/*
+portal-data/uploads/*
+!portal-data/jobs/.gitkeep
+!portal-data/results/.gitkeep
+!portal-data/uploads/.gitkeep
+portal.db

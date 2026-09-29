@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Odoo to Ginesys DC Automation</title><link rel="stylesheet" href="/static/styles.css?v=4.5.3">
+</head>
+<body><main class="shell">
+  <nav class="topbar">
+    <a class="brand" href="/"><strong>TS</strong><span>Ginesys TO</span></a>
+    <div class="userbar"><button class="user-identity" id="test-connection-btn" type="button" title="Click to test your Ginesys connection"><span class="user-name">{{ user.display_name }}</span><span class="user-auth-time" id="user-auth-time">Last authenticated: —</span></button>{% if user.role == "admin" %}<a href="/admin">Admin</a><a href="/audit">Audit</a>{% endif %}<button id="logout-btn" type="button">Logout</button></div>
+  </nav>
+  <header class="hero"><span class="eyebrow">TS | GINESYS TO | V4.5</span><h1>Odoo <i>&rarr;</i> Ginesys</h1><p>Validate Odoo Invoice/Internal Transfer files, create Adhoc DC + Transfer Out, and download posting results.</p></header>
+  <section class="card"><form id="upload-form">
+    <div class="section-head"><div><h2>1. Upload Odoo Raw Files</h2><p>Invoice and Internal Transfer files can be uploaded together.</p></div><span class="badge">.xlsx | .xls | .csv</span></div>
+    <label class="drop-zone" id="file-zone"><input id="files" name="files" type="file" accept=".xlsx,.xls,.csv" multiple required><div class="xlsx-icon" aria-hidden="true"><svg viewBox="0 0 96 96" role="img"><path class="file-shape" d="M18 2h48l18 22v66c0 3-2 5-5 5H18c-3 0-5-2-5-5V7c0-3 2-5 5-5z"/><path class="page-fill" d="M23 7h37v23c0 4 3 7 7 7h12v39H23z"/><path class="fold-fill" d="M60 7v23c0 4 3 7 7 7h12z"/><path class="table-mark" d="M30 25h35v4H30zm0 10h35v4H30zm0 10h35v4H30zm0 10h35v4H30zM41 25h4v34h-4zm13 0h4v34h-4z"/><rect class="label-fill" x="13" y="67" width="70" height="22" rx="5"/><text x="48" y="84" text-anchor="middle">XLSX</text></svg></div><strong>Drop Odoo files here</strong><small>or click to choose files</small><output id="file-list"></output></label>
+    <button class="primary" id="validate-btn" type="submit"><span>Validate & Build Posting Preview</span><b>&rarr;</b></button>
+  </form></section>
+  <section class="card results-card" id="validation-card" hidden>
+    <div class="section-head"><div><h2>2. Validation</h2><p id="validation-message"></p></div></div>
+    <div class="metrics" id="metrics"></div><div id="blocking-area"></div><div id="warning-area"></div>
+    <div class="table-wrap"><table class="validation-table"><thead><tr><th>Reference</th><th>Date</th><th>Store</th><th>Site</th><th>Ginesys Check</th><th>Existing DC</th><th>Existing Transfer Out</th><th>State</th><th>GST</th><th>GSTIN</th><th>Doc Scheme</th><th>Lines</th><th>Qty</th></tr></thead><tbody id="preview-body"></tbody></table></div>
+    <div class="live-panel" id="live-panel" hidden><label class="confirm"><input type="checkbox" id="confirm-post"><span>I confirm this will create live Ginesys Adhoc DC and Transfer Out transactions.</span></label><button class="primary action-button" id="post-btn" type="button" disabled><span>POST TO GINESYS</span><b>&#9889;</b></button></div>
+  </section>
+  <section class="card results-card" id="posting-card" hidden>
+    <div class="section-head"><div><h2>3. Posting Result</h2><p id="post-message"></p></div><a id="result-download" class="ghost-link" href="#">Download result Excel &darr;</a></div>
+    <div class="metrics" id="post-metrics"></div><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Store</th><th>DC Number</th><th>DC User</th><th>Transfer Out</th><th>Transfer User</th><th>Status</th><th>Error</th></tr></thead><tbody id="result-body"></tbody></table></div>
+    <button class="primary action-button" id="retry-btn" type="button" hidden disabled><span>Retry Failed Only</span><b>&#8635;</b></button>
+  </section>
+</main><script src="/static/app.js?v=4.5.3"></script></body></html>

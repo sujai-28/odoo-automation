@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Initial Setup | Odoo to Ginesys</title><link rel="stylesheet" href="/static/styles.css">
+</head>
+<body><main class="auth-shell">
+  <a class="brand auth-brand" href="/"><strong>TS</strong><span>Ginesys TO</span></a>
+  <section class="card auth-card">
+    <span class="eyebrow">FIRST ADMIN SETUP</span>
+    <h1>Create Admin</h1>
+    <p>Sign in with the first administrator's Ginesys credentials. After this, authorize additional users from the Admin page.</p>
+    <form id="setup-form" class="stack-form">
+      <label>Ginesys Username<input name="username" autocomplete="username" required></label>
+      <label>Display Name<input name="display_name" required></label>
+      <label>Ginesys Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <div class="form-error" id="form-error" hidden></div>
+      <button class="primary" type="submit"><span>Create Admin</span><b>&rarr;</b></button>
+    </form>
+  </section>
+</main><script src="/static/auth.js"></script></body></html>

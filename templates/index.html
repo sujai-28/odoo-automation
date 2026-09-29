@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Odoo Automation Suite | Technosport</title>
+<!-- Modern typography -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* CSS RESET AND VARIABLES */
+:root {
+  --brand-navy: #0A1128;
+  --brand-navy-light: #162447;
+  --brand-orange: #eb8131;
+  --brand-orange-hover: #d77123;
+  
+  --bg-main: #f8fafc;
+  --sidebar-bg: var(--brand-navy);
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --card-shadow: 0 10px 30px rgba(10, 17, 40, 0.05);
+  
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+  
+  --accent-color: var(--brand-orange);
+  --accent-glow: 0 4px 14px rgba(235, 129, 49, 0.3);
+  
+  --success: #10b981;
+  --danger: #ef4444;
+  
+  --radius: 16px;
+  --transition: all 0.3s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 280px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; bottom: 0; left: 0;
+  z-index: 100;
+  color: var(--text-inverse);
+}
+.sidebar-header {
+  padding: 32px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.logo-box {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--accent-color);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 18px; color: #fff;
+  box-shadow: var(--accent-glow);
+}
+.brand-name { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+.brand-name span { color: var(--accent-color); }
+
+.nav-menu { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: 12px;
+  font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.6);
+  cursor: pointer; transition: var(--transition);
+  border: 1px solid transparent;
+}
+.nav-item:hover { 
+  background: var(--sidebar-hover); color: var(--text-inverse);
+}
+.nav-item.active {
+  background: rgba(235, 129, 49, 0.1); color: var(--accent-color);
+  border-color: rgba(235, 129, 49, 0.2);
+}
+.nav-item svg { width: 20px; height: 20px; stroke-width: 2; }
+
+/* MAIN CONTENT */
+.main-wrapper {
+  flex-grow: 1; margin-left: 280px;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  height: 80px; 
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.breadcrumb {
+  font-size: 14px; font-weight: 500; color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.breadcrumb span { color: var(--text-main); font-weight: 600; }
+.user-profile { display: flex; align-items: center; gap: 14px; }
+.user-profile .role-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
+.user-profile .role-sub { font-size: 12px; color: var(--accent-color); font-weight: 500; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--bg-main); border: 2px solid var(--border-color);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: var(--text-main); font-size: 14px;
+}
+
+/* CONTENT BODY */
+.content-body {
+  padding: 48px; max-width: 1000px; margin: 0 auto; width: 100%;
+}
+.page-header { margin-bottom: 40px; }
+.page-title { 
+  font-size: 38px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px;
+  color: var(--brand-navy);
+}
+.page-desc { font-size: 16px; color: var(--text-muted); font-weight: 400;}
+
+/* STEP WIZARD */
+.step-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.step-card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+  background: var(--border-color);
+  transition: var(--transition);
+}
+.step-card.active::before { background: var(--accent-color); }
+
+.step-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
+.step-card.hidden { display: none; }
+
+.step-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;
+}
+.step-title-wrap { display: flex; align-items: center; gap: 16px; }
+.step-num {
+  font-size: 14px; font-weight: 800; color: var(--text-muted);
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.step-card.active .step-num {
+  background: var(--accent-color); border-color: transparent;
+  color: #fff; box-shadow: var(--accent-glow);
+}
+.step-title { font-size: 20px; font-weight: 700; color: var(--text-main); }
+
+/* OPTIONS GRID */
+.options-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+@media (max-width: 1080px) {
+  .options-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 580px) {
+  .options-grid { grid-template-columns: 1fr; }
+}
+.option-item {
+  border: 1px solid var(--border-color); border-radius: 14px;
+  padding: 24px 20px; text-align: center;
+  cursor: pointer; transition: var(--transition);
+  background: #fff;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  position: relative; overflow: hidden;
+}
+.option-item:hover { 
+  border-color: #cbd5e1; 
+  background: var(--bg-main);
+  transform: translateY(-2px);
+}
+.option-item.selected {
+  border-color: var(--accent-color); background: rgba(235, 129, 49, 0.05);
+}
+
+.option-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--bg-main);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); transition: var(--transition);
+  border: 1px solid var(--border-color);
+}
+.option-item:hover .option-icon { background: #fff; color: var(--text-main); }
+.option-item.selected .option-icon { background: var(--accent-color); border-color: transparent; color: #fff; box-shadow: var(--accent-glow);}
+.option-icon svg { width: 28px; height: 28px; stroke-width: 1.5; }
+
+.option-text .label { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+.option-text .desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+/* WAREHOUSES GRID */
+.warehouses-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+}
+@media (max-width: 900px) {
+  .warehouses-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .warehouses-grid { grid-template-columns: 1fr; }
+}
+
+/* ALERT */
+.alert-minimal {
+  margin-top: 20px; padding: 16px 20px; border-radius: 12px;
+  background: #fef2f2; border: 1px solid #fca5a5;
+  color: #ef4444; font-size: 14px; font-weight: 600;
+  display: none; align-items: center; gap: 12px;
+}
+
+/* UPLOADS */
+.upload-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;
+}
+.upload-box {
+  border: 2px dashed #cbd5e1; border-radius: 16px;
+  padding: 40px 24px; text-align: center;
+  transition: var(--transition); position: relative;
+  background: #ffffff; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 180px;
+}
+.upload-box:hover { border-color: var(--brand-orange); background: #fffcf9; }
+.upload-box.has-file { 
+  border-color: #e2e8f0; border-style: solid; background: #f8fafc; padding: 20px;
+}
+
+.up-icon { 
+  width: 56px; height: 56px; border-radius: 50%; background: var(--bg-main);
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px; transition: var(--transition); 
+}
+.upload-box:hover .up-icon { background: rgba(235, 129, 49, 0.1); color: var(--brand-orange); transform: translateY(-4px);}
+.upload-box.has-file .up-icon { display: none; }
+.up-icon svg { width: 28px; height: 28px; stroke-width: 2; }
+
+.up-title { font-size: 16px; font-weight: 800; color: var(--brand-navy); margin-bottom: 6px; }
+.up-desc { font-size: 13px; color: var(--text-muted); font-weight: 500;}
+.upload-box input[type="file"] { display: none; }
+
+.file-badge {
+  display: none; align-items: center; gap: 14px;
+  width: 100%; padding: 16px; border-radius: 12px;
+  background: #ffffff; border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.file-badge.show { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.f-icon {
+  width: 44px; height: 44px; border-radius: 10px; background: #ecfdf5; color: #10b981;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.f-info { flex-grow: 1; overflow: hidden; text-align: left; min-width: 0; }
+.f-info .fname { font-size: 14px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.f-info .fstatus { font-size: 12px; color: #10b981; font-weight: 700; }
+
+.file-badge .remove {
+  width: 32px; height: 32px; border-radius: 50%; background: #fef2f2; color: #ef4444;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0;
+}
+.file-badge .remove:hover { background: #fee2e2; transform: scale(1.1); color: #dc2626;}
+
+/* ACTIONS */
+.action-row {
+  display: flex; justify-content: flex-end; margin-top: 32px; padding-top: 32px;
+  border-top: 1px solid var(--border-color);
+}
+.btn {
+  background: var(--accent-color); color: #fff; border: none;
+  padding: 16px 36px; border-radius: 12px;
+  font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--accent-glow);
+  letter-spacing: 0.5px;
+}
+.btn:hover:not(:disabled) { background: var(--brand-orange-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(235, 129, 49, 0.4); }
+.btn:disabled { 
+  background: #cbd5e1; color: #f1f5f9; 
+  box-shadow: none; cursor: not-allowed; 
+}
+
+.spinner {
+  width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.8s linear infinite; display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RESULTS */
+#result-container { display: none; margin-top: 32px; animation: slideUp 0.5s ease forwards;}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.result-card {
+  background: #ffffff;
+  border: 1px solid #6ee7b7;
+  border-radius: var(--radius); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+  overflow: hidden;
+}
+.rc-header {
+  padding: 24px 32px; border-bottom: 1px solid var(--border-color);
+  background: #ecfdf5;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rc-title { font-size: 18px; font-weight: 800; color: #059669; display: flex; align-items: center; gap: 12px; }
+.rc-title svg { width: 24px; height: 24px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--bg-main); border-bottom: 1px solid var(--border-color); }
+.stat-box { padding: 32px 24px; text-align: center; border-right: 1px solid var(--border-color); }
+.stat-box:last-child { border-right: none; }
+.stat-lbl { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.stat-val { font-size: 36px; font-weight: 800; color: var(--brand-navy); }
+.stat-val.error { color: var(--danger); }
+
+.rc-body { padding: 32px; }
+.warn-list-container {
+  margin-top: 24px; border: 1px solid #fca5a5; border-radius: 12px;
+  background: #fef2f2; padding: 20px; display: none;
+}
+.warn-list-container.show { display: block; }
+.warn-title { font-size: 15px; font-weight: 800; color: #dc2626; margin-bottom: 12px; }
+.warn-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 13px; color: #7f1d1d; font-weight: 500;}
+.warn-list li { padding: 8px 0; border-bottom: 1px solid #fecaca; }
+.warn-list li:last-child { border: none; }
+
+.btn-download {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: var(--success); color: #fff; border: none;
+  padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: var(--transition);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+.btn-download:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
+
+/* LOGOUT & TABLES */
+.btn-logout {
+  background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: var(--transition);
+  text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 12px;
+}
+.btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+
+.history-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.history-table th, .history-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border-color); }
+.history-table th { color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.history-table td { color: var(--text-main); font-size: 14px; font-weight: 600; }
+.history-table tr:hover td { background: var(--bg-main); }
+.badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+.badge-success { background: #ecfdf5; color: #059669; }
+.badge-danger { background: #fef2f2; color: #dc2626; }
+.badge-info { background: #eff6ff; color: #1d4ed8; }
+.badge-warning { background: #fefce8; color: #a16207; }
+.file-chip {
+  display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid var(--border-color);
+  padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-main);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.file-chip .remove-chip {
+  cursor: pointer; color: #94a3b8; transition: 0.2s; font-weight: 800; font-size: 16px; line-height: 1;
+}
+.file-chip .remove-chip:hover { color: #ef4444; transform: scale(1.15); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Technosport Logo" style="height: 46px; max-width: 100%; object-fit: contain; background: #fff; padding: 8px 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+  </div>
+  <div class="nav-menu">
+    <div class="nav-item active" id="nav-integration" onclick="switchView('integration', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+      Integration
+    </div>
+    <div class="nav-item" id="nav-ginesys" onclick="openGinesysView(this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+      Ginesys Transfer Out
+    </div>
+    <div class="nav-item" id="nav-history" onclick="switchView('history', this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      History Logs
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      System Settings
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="main-wrapper">
+  
+  <header class="topbar">
+    <div class="breadcrumb">
+      Odoo Platform <span style="margin:0 12px; color:rgba(255,255,255,0.2);">/</span> <span id="top-title">Sales Generation</span>
+    </div>
+    <div class="user-profile">
+      <div style="text-align: right;">
+        <div class="role-title">Admin Account</div>
+        <div class="role-sub">Operations</div>
+      </div>
+      <div class="avatar">OP</div>
+      <a href="/logout" class="btn-logout">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Logout
+      </a>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content-body" id="view-integration">
+    <div class="page-header">
+      <h1 class="page-title" id="main-heading">Generate Odoo Import</h1>
+      <p class="page-desc" id="main-subheading">Process your dispatch files into Odoo-ready intelligent data.</p>
+    </div>
+
+    <!-- STEP 1: CHANNEL -->
+    <div class="step-card active" id="step-1">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">01</span>
+          <span class="step-title">Select Sales Channel / Module</span>
+        </div>
+      </div>
+      <div class="options-grid">
+        <div class="option-item" data-val="EBO" onclick="selectChannel('EBO', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">EBO Stores</div>
+            <div class="desc">Exclusive Brand Outlets</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="D2C" onclick="selectChannel('D2C', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">D2C</div>
+            <div class="desc">Direct to Consumer</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="LFR" onclick="selectChannel('LFR', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">LFR Retail</div>
+            <div class="desc">Large Format Retail</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="GINESYS" id="opt-ginesys" onclick="selectChannel('GINESYS', this)">
+          <div class="option-icon" style="color: var(--brand-orange); background: rgba(235, 129, 49, 0.08); border-color: rgba(235, 129, 49, 0.25);">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Ginesys Transfer Out</div>
+            <div class="desc">Adhoc DC &amp; Transfer Out</div>
+          </div>
+        </div>
+      </div>
+      <div class="alert-minimal" id="channel-alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>Logic is currently configured only for EBO stores.</span>
+      </div>
+    </div>
+
+    <!-- STEP 2: WAREHOUSE (For EBO) -->
+    <div class="step-card hidden" id="step-warehouse">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">02</span>
+          <span class="step-title">Select Warehouse</span>
+        </div>
+      </div>
+      <div class="warehouses-grid" id="grid-warehouses">
+        <div class="option-item" data-val="Bagalur" onclick="selectWarehouse('Bagalur', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Bagalur</div>
+            <div class="desc">Primary Production & Hub</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="Bhiwandi" onclick="selectWarehouse('Bhiwandi', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Bhiwandi</div>
+            <div class="desc">West Distribution Hub</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="Kolkata" onclick="selectWarehouse('Kolkata', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Kolkata</div>
+            <div class="desc">East Distribution Hub</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="Gurgaon" onclick="selectWarehouse('Gurgaon', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Gurgaon</div>
+            <div class="desc">North Distribution Hub</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: MOVEMENT TYPE (For EBO: Internal / External) -->
+    <div class="step-card hidden" id="step-movement">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">03</span>
+          <span class="step-title">Select Movement Type</span>
+        </div>
+      </div>
+      <div class="options-grid" style="grid-template-columns: repeat(2, 1fr);" id="grid-movement">
+        <div class="option-item" data-val="Internal" onclick="selectMovement('Internal', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">Internal</div>
+            <div class="desc">Stores operating within regional cluster</div>
+          </div>
+        </div>
+        <div class="option-item" data-val="External" onclick="selectMovement('External', this)">
+          <div class="option-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+          </div>
+          <div class="option-text">
+            <div class="label">External</div>
+            <div class="desc">Inter-state dispatches across India</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 (FOR LFR): CUSTOMER SELECTION -->
+    <div class="step-card hidden" id="step-lfr-customer">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num">02</span>
+          <span class="step-title">Select Customer</span>
+        </div>
+      </div>
+      <div style="padding: 8px 0;">
+        <div class="upload-box" id="z-lfr-margin" style="justify-content: flex-start; cursor: default; margin:0; border-color: #cbd5e1; background: #fff; max-width: 420px; display: flex; flex-direction: column; align-items: flex-start;">
+          <div class="up-icon" style="margin-bottom: 8px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg></div>
+          <div class="up-title">Select Customer</div>
+          <div class="up-desc">Margin configuration</div>
+          <select id="lfr-customer-select" onchange="customerSelected()" style="margin-top: 16px; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--text-main); outline: none;">
+            <option value="">Loading customers...</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 / 4: UPLOAD FILES -->
+    <div class="step-card hidden" id="step-3">
+      <div class="step-header">
+        <div class="step-title-wrap">
+          <span class="step-num" id="upload-step-num">04</span>
+          <span class="step-title">Upload Documents</span>
+        </div>
+      </div>
+      <!-- AUTO-ROUTING ALERT -->
+      <div class="alert-minimal" id="auto-routing-info" style="display: none; background: #f0fdf4; border: 1px solid #86efac; color: #166534; margin-bottom: 24px; padding: 14px 18px; border-radius: 12px; align-items: center; gap: 12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span style="font-size: 14px; font-weight: 500;">Automatic Routing Active</span>
+      </div>
+      <div class="upload-grid" id="grid-ebo">
+        
+        <label class="upload-box" id="z-pl">
+          <div class="up-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <div class="up-title">Packing List</div>
+          <div class="up-desc">Increff dispatch data</div>
+          <input type="file" id="f-pl" accept=".xlsx,.xls" onchange="filePicked(this, 'z-pl', 'b-pl', 'pl')"/>
+          <div class="file-badge" id="b-pl" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="f-info">
+              <div class="fname"></div>
+              <div class="fstatus">Ready for processing</div>
+            </div>
+            <div class="remove" onclick="removeFile('f-pl', 'z-pl', 'b-pl', 'pl')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+          </div>
+        </label>
+
+        <label class="upload-box" id="z-cdb">
+          <div class="up-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </div>
+          <div class="up-title">Customer DB</div>
+          <div class="up-desc">Mapping reference</div>
+          <input type="file" id="f-cdb" accept=".xlsx,.xls" onchange="filePicked(this, 'z-cdb', 'b-cdb', 'cdb')"/>
+          <div class="file-badge" id="b-cdb" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="f-info">
+              <div class="fname"></div>
+              <div class="fstatus">Ready for processing</div>
+            </div>
+            <div class="remove" onclick="removeFile('f-cdb', 'z-cdb', 'b-cdb', 'cdb')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+          </div>
+        </label>
+
+        <label class="upload-box" id="z-pm">
+          <div class="up-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+          </div>
+          <div class="up-title">Product Master</div>
+          <div class="up-desc">Barcode mapping</div>
+          <input type="file" id="f-pm" accept=".xlsx,.xls" onchange="filePicked(this, 'z-pm', 'b-pm', 'pm')"/>
+          <div class="file-badge" id="b-pm" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="f-info">
+              <div class="fname"></div>
+              <div class="fstatus">Ready for processing</div>
+            </div>
+            <div class="remove" onclick="removeFile('f-pm', 'z-pm', 'b-pm', 'pm')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+          </div>
+        </label>
+
+      </div>
+      
+      <div class="upload-grid" id="grid-lfr" style="display: none; margin-top: 24px;">
+        <label class="upload-box" id="z-lfr-main">
+          <div class="up-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+          <div class="up-title">Main File</div>
+          <div class="up-desc">LFR Sales Data</div>
+          <input type="file" id="f-lfr-main" accept=".xlsx,.xls" onchange="filePicked(this, 'z-lfr-main', 'b-lfr-main', 'lfr_main')"/>
+          <div class="file-badge" id="b-lfr-main" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon"><svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="f-info"><div class="fname"></div><div class="fstatus">Ready</div></div>
+            <div class="remove" onclick="removeFile('f-lfr-main', 'z-lfr-main', 'b-lfr-main', 'lfr_main')"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+          </div>
+        </label>
+        
+        <label class="upload-box" id="z-lfr-mrp">
+          <div class="up-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+          <div class="up-title">MRP File</div>
+          <div class="up-desc">Price definitions</div>
+          <input type="file" id="f-lfr-mrp" accept=".xlsx,.xls" onchange="filePicked(this, 'z-lfr-mrp', 'b-lfr-mrp', 'lfr_mrp')"/>
+          <div class="file-badge" id="b-lfr-mrp" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon"><svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="f-info"><div class="fname"></div><div class="fstatus">Ready</div></div>
+            <div class="remove" onclick="removeFile('f-lfr-mrp', 'z-lfr-mrp', 'b-lfr-mrp', 'lfr_mrp')"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+          </div>
+        </label>
+
+        <label class="upload-box" id="z-lfr-odoo">
+          <div class="up-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
+          <div class="up-title">Odoo Template</div>
+          <div class="up-desc">Odoo format base</div>
+          <input type="file" id="f-lfr-odoo" accept=".xlsx,.xls" onchange="filePicked(this, 'z-lfr-odoo', 'b-lfr-odoo', 'lfr_odoo')"/>
+          <div class="file-badge" id="b-lfr-odoo" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon"><svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="f-info"><div class="fname"></div><div class="fstatus">Ready</div></div>
+            <div class="remove" onclick="removeFile('f-lfr-odoo', 'z-lfr-odoo', 'b-lfr-odoo', 'lfr_odoo')"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+          </div>
+        </label>
+
+        <label class="upload-box" id="z-lfr-pm">
+          <div class="up-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg></div>
+          <div class="up-title">Product Master</div>
+          <div class="up-desc">Barcode mapping</div>
+          <input type="file" id="f-lfr-pm" accept=".xlsx,.xls" onchange="filePicked(this, 'z-lfr-pm', 'b-lfr-pm', 'lfr_pm')"/>
+          <div class="file-badge" id="b-lfr-pm" onclick="event.preventDefault(); event.stopPropagation();">
+            <div class="f-icon"><svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="f-info"><div class="fname"></div><div class="fstatus">Ready</div></div>
+            <div class="remove" onclick="removeFile('f-lfr-pm', 'z-lfr-pm', 'b-lfr-pm', 'lfr_pm')"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+          </div>
+        </label>
+
+      </div>
+      
+      <div class="action-row">
+        <button type="button" class="btn" id="btn-process" disabled onclick="processFiles()">
+          <div class="spinner" id="spin"></div>
+          <span id="btn-txt">Proceed</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-container">
+      <div class="result-card">
+        <div class="rc-header">
+          <div class="rc-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            Processing Successfully Completed
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-lbl">Invoices</div>
+            <div class="stat-val" id="s-inv">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">SKU Lines</div>
+            <div class="stat-val" id="s-lines">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Quantity</div>
+            <div class="stat-val" id="s-qty">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Missing</div>
+            <div class="stat-val error" id="s-miss">—</div>
+          </div>
+        </div>
+        <div class="rc-body">
+          <div id="routing-summary-badge" style="display:none; margin-bottom:16px; padding:12px 18px; border-radius:12px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; font-size:14px; font-weight:600; line-height:1.5;">
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <button class="btn-download" id="btn-dl-external" onclick="window.location.href='/download?type=external'" style="display:none; background:var(--brand-orange); color:#fff; border:none; padding:14px 22px; border-radius:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Download External EBOs (Sales Orders)
+            </button>
+            <button class="btn-download" id="btn-dl-internal" onclick="window.location.href='/download?type=internal'" style="display:none; background:#0284c7; color:#fff; border:none; padding:14px 22px; border-radius:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Download Internal EBOs (Transfers)
+            </button>
+            <button class="btn-download" id="btn-dl-all" onclick="window.location.href='/download?type=all'" style="background:var(--brand-navy); color:#fff; border:none; padding:14px 22px; border-radius:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Download Combined File
+            </button>
+          </div>
+          
+          <div class="warn-list-container" id="warn-box">
+            <div class="warn-title">Missing Barcodes Detected</div>
+            <ul class="warn-list" id="warn-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GINESYS TRANSFER OUT WORKFLOW SECTION -->
+    <div id="section-ginesys" style="display: none;">
+      
+      <!-- GINESYS STEP 2: OPERATOR & CONFIGURATION -->
+      <div class="step-card active" id="step-ginesys-config" style="margin-top: 24px;">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <span class="step-num">02</span>
+            <div>
+              <span class="step-title">Ginesys WebAPI &amp; Operator Session</span>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Connected to <strong style="color: var(--brand-navy);">technosport.ginesys.cloud</strong> • Owner Site 228 • Outward GST Schemes: 215</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="ginesys-badge" class="badge badge-success" style="display: inline-flex; align-items: center; gap: 6px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              WebAPI Ready
+            </span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: flex-end;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Select Ginesys Operator
+            </label>
+            <select id="ginesys-operator-select" onchange="onGinesysOperatorChanged()" onclick="if(!this.value) fetchGinesysOperators()" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-main); background: #fff; outline: none; transition: var(--transition);">
+              {% if ginesys_operators %}
+                {% for op in ginesys_operators %}
+                  <option value="{{ op.id }}">{{ op.display_name or op.username }}{% if op.role == 'admin' %} [Admin]{% endif %} ({{ op.ginesys_username }})</option>
+                {% endfor %}
+              {% else %}
+                <option value="">Loading authorized operators...</option>
+              {% endif %}
+            </select>
+          </div>
+          <div>
+            <button type="button" class="btn" id="btn-test-ginesys" onclick="testGinesysConnection()" style="width: 100%; padding: 14px 20px; font-size: 14px; background: var(--brand-navy); justify-content: center;">
+              <div class="spinner" id="spin-test-ginesys" style="width: 16px; height: 16px;"></div>
+              <span id="txt-test-ginesys">Test Connection</span>
+            </button>
+          </div>
+        </div>
+        <div id="ginesys-conn-alert" style="display: none; margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;"></div>
+      </div>
+
+      <!-- GINESYS STEP 3: UPLOAD RAW DOCUMENTS -->
+      <div class="step-card active" id="step-ginesys-upload" style="margin-top: 24px;">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <span class="step-num">03</span>
+            <div>
+              <span class="step-title">Upload Odoo Raw Documents</span>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Upload Odoo Invoice and/or Internal Transfer files (.xlsx, .xls, .csv). Multiple files can be selected together.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-box" id="z-ginesys" onclick="document.getElementById('f-ginesys').click()" style="min-height: 180px; cursor: pointer;">
+          <input type="file" id="f-ginesys" accept=".xlsx,.xls,.csv" multiple onchange="onGinesysFilesPicked(this)" onclick="event.stopPropagation()" />
+          <div class="up-icon" style="background: rgba(235, 129, 49, 0.1); color: var(--brand-orange);">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          </div>
+          <div class="up-title" style="font-size: 18px;">Drop Odoo Raw Files Here or Click to Browse</div>
+          <div class="up-desc">Supports Invoices &amp; Internal Transfers (.xlsx, .xls, .csv)</div>
+          <div id="ginesys-file-list" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%;"></div>
+        </div>
+
+        <div class="action-row" style="margin-top: 24px; padding-top: 24px;">
+          <button type="button" class="btn" id="btn-ginesys-validate" disabled onclick="validateGinesysFiles()">
+            <div class="spinner" id="spin-ginesys-validate"></div>
+            <span id="txt-ginesys-validate">Validate &amp; Build Posting Preview</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- GINESYS STEP 4: VALIDATION PREVIEW & LIVE POSTING -->
+      <div class="step-card hidden" id="card-ginesys-preview" style="margin-top: 24px;">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <span class="step-num">04</span>
+            <div>
+              <span class="step-title">Validation &amp; Live Posting Confirmation</span>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="ginesys-val-subtitle">Prechecked against Ginesys WebAPI for existing documents.</p>
+            </div>
+          </div>
+          <span class="badge badge-success" id="badge-ginesys-ready">Ready to Post</span>
+        </div>
+
+        <div class="stats-grid" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 24px;">
+          <div class="stat-box">
+            <div class="stat-lbl">Documents</div>
+            <div class="stat-val" id="gv-docs">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Stores</div>
+            <div class="stat-val" id="gv-stores">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Valid Lines</div>
+            <div class="stat-val" id="gv-lines">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Total Qty</div>
+            <div class="stat-val" id="gv-qty">0</div>
+          </div>
+        </div>
+
+        <!-- GINESYS PRECHECK BREAKDOWN -->
+        <div id="ginesys-precheck-breakdown" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+          <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="gpre-new">0 Documents Ready for New DC</span>
+          </div>
+          <div id="gpre-dc-box" style="display: none; background: #fefce8; border: 1px solid #fde047; color: #854d0e; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <span id="gpre-dc">0 Documents have existing DC</span>
+          </div>
+          <div id="gpre-done-box" style="display: none; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="gpre-done">0 Documents already posted</span>
+          </div>
+        </div>
+
+        <!-- WARNINGS BOX -->
+        <div class="warn-list-container" id="ginesys-warn-box" style="margin-bottom: 24px;">
+          <div class="warn-title">Notices &amp; Warnings</div>
+          <ul class="warn-list" id="ginesys-warn-list"></ul>
+        </div>
+
+        <!-- PREVIEW TABLE -->
+        <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Document Precheck Preview</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Exact barcode matching on Ginesys Web</span>
+        </div>
+        <div style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px;">
+          <table class="history-table" style="margin-top: 0; font-size: 13px;">
+            <thead style="position: sticky; top: 0; background: #fff; z-index: 2;">
+              <tr>
+                <th>Reference</th>
+                <th>Date</th>
+                <th>Store Name</th>
+                <th>Site Code</th>
+                <th>Ginesys Check</th>
+                <th>Existing DC</th>
+                <th>State</th>
+                <th>GSTIN</th>
+                <th>Lines</th>
+                <th>Qty</th>
+              </tr>
+            </thead>
+            <tbody id="ginesys-preview-tbody">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- POST ACTION BAR -->
+        <div style="margin-top: 24px; padding: 20px; background: #fffcf9; border: 1px solid rgba(235,129,49,0.3); border-radius: 14px; display: flex; flex-direction: column; gap: 16px;">
+          <label style="display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--text-main); cursor: pointer;">
+            <input type="checkbox" id="chk-ginesys-confirm" onchange="onGinesysConfirmChanged()" style="width: 18px; height: 18px; accent-color: var(--brand-orange); cursor: pointer;" />
+            <span>I confirm this will create live Ginesys Adhoc DC and Transfer Out transactions for the above documents.</span>
+          </label>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn" id="btn-ginesys-post" disabled onclick="postGinesysJob()" style="padding: 16px 32px; font-size: 16px;">
+              <div class="spinner" id="spin-ginesys-post"></div>
+              <span id="txt-ginesys-post">POST TO GINESYS</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GINESYS STEP 5: POSTING RESULTS -->
+      <div class="step-card hidden" id="card-ginesys-results" style="margin-top: 24px; border-color: #6ee7b7;">
+        <div class="rc-header" style="padding: 20px 24px; background: #ecfdf5; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <div class="rc-title" style="font-size: 18px; font-weight: 800; color: #059669; display: flex; align-items: center; gap: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            Ginesys WebAPI Posting Completed
+          </div>
+          <a id="btn-ginesys-download" href="#" target="_blank" class="btn" style="background: #059669; padding: 12px 20px; font-size: 14px; text-decoration: none;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Download Result Excel
+          </a>
+        </div>
+
+        <div class="stats-grid" style="border-radius: 0; border-bottom: 1px solid var(--border-color);">
+          <div class="stat-box">
+            <div class="stat-lbl">Processed</div>
+            <div class="stat-val" id="gr-total">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Successful</div>
+            <div class="stat-val" style="color: #059669;" id="gr-success">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Failed</div>
+            <div class="stat-val" style="color: var(--danger);" id="gr-failed">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Skipped / Exists</div>
+            <div class="stat-val" id="gr-skipped">0</div>
+          </div>
+        </div>
+
+        <div style="padding: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Detailed Posting Results</div>
+          <div style="max-height: 360px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px;">
+            <table class="history-table" style="margin-top: 0; font-size: 13px;">
+              <thead style="position: sticky; top: 0; background: #fff; z-index: 2;">
+                <tr>
+                  <th>Reference</th>
+                  <th>Store</th>
+                  <th>DC Number</th>
+                  <th>Transfer Out</th>
+                  <th>Status</th>
+                  <th>Error / Detail</th>
+                </tr>
+              </thead>
+              <tbody id="ginesys-results-tbody"></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+            <button type="button" class="btn" id="btn-ginesys-retry" style="display: none; background: #dc2626;" onclick="retryGinesysFailed()">
+              <div class="spinner" id="spin-ginesys-retry"></div>
+              <span>Retry Failed Only</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /section-ginesys -->
+
+  </div> <!-- /content-body (integration) -->
+
+  <!-- HISTORY LOGS VIEW -->
+  <div class="content-body" id="view-history" style="display: none;">
+    <div class="page-header">
+      <h1 class="page-title">History Logs</h1>
+      <p class="page-desc">Review your past data processing jobs.</p>
+    </div>
+    
+    <div class="step-card active">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Channel</th>
+            <th>Warehouse</th>
+            <th>Type</th>
+            <th>Invoices</th>
+            <th>SKU Lines</th>
+            <th>Total Qty</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="8" style="text-align:center;">Loading logs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div> <!-- /main-wrapper -->
+
+<script>
+function esc(v) {
+  return String(v ?? '').replace(/[<>'"]/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[c]));
+}
+
+const state = {
+  channel: null,
+  warehouse: null,
+  eboType: null,
+  files: { pl: null, cdb: null, pm: null, lfr_main: null, lfr_mrp: null, lfr_odoo: null, lfr_pm: null },
+  lfrCustomer: null,
+  lfrMargin: null,
+  ginesysFiles: [],
+  ginesysJobId: null,
+  ginesysOperatorId: null,
+  ginesysConfig: null
+};
+
+function switchView(viewName, el) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  
+  if (viewName === 'integration') {
+    document.getElementById('view-integration').style.display = 'block';
+    document.getElementById('view-history').style.display = 'none';
+    if (state.channel === 'GINESYS') {
+      document.getElementById('top-title').textContent = 'Ginesys Transfer Out';
+    } else {
+      document.getElementById('top-title').textContent = 'Sales Generation';
+    }
+  } else if (viewName === 'history') {
+    document.getElementById('view-integration').style.display = 'none';
+    document.getElementById('view-history').style.display = 'block';
+    document.getElementById('top-title').textContent = 'History Logs';
+    loadHistory();
+  }
+}
+
+function openGinesysView(el) {
+  switchView('integration');
+  document.querySelectorAll('.sidebar .nav-item').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const opt = document.getElementById('opt-ginesys');
+  if (opt) selectChannel('GINESYS', opt);
+}
+
+async function fetchLFRCustomers() {
+  const sel = document.getElementById('lfr-customer-select');
+  if(sel.options.length > 1) return; // already loaded
+  try {
+    const res = await fetch('/api/lfr_customers');
+    const data = await res.json();
+    if(data.success) {
+      sel.innerHTML = '<option value="">Select a Customer...</option>' + 
+        data.customers.map(c => `<option value="${c.name}" data-margin="${c.margin}">${c.name}</option>`).join('');
+    } else {
+      sel.innerHTML = '<option value="">Failed to load</option>';
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">Error loading</option>';
+  }
+}
+
+function customerSelected() {
+  const sel = document.getElementById('lfr-customer-select');
+  if(sel.selectedIndex > 0) {
+    const opt = sel.options[sel.selectedIndex];
+    state.lfrCustomer = opt.value;
+    state.lfrMargin = opt.getAttribute('data-margin');
+    document.getElementById('z-lfr-margin').style.borderColor = 'var(--brand-orange)';
+    document.getElementById('z-lfr-margin').style.backgroundColor = '#fffcf9';
+    document.getElementById('step-3').classList.remove('hidden', 'disabled');
+  } else {
+    state.lfrCustomer = null;
+    state.lfrMargin = null;
+    document.getElementById('z-lfr-margin').style.borderColor = '#cbd5e1';
+    document.getElementById('z-lfr-margin').style.backgroundColor = '#ffffff';
+    document.getElementById('step-3').classList.add('hidden');
+  }
+  checkSubmit();
+}
+
+async function loadHistory() {
+  const tbody = document.getElementById('history-tbody');
+  try {
+    const res = await fetch('/api/history');
+    const data = await res.json();
+    if(data.success && data.history.length > 0) {
+      tbody.innerHTML = data.history.map(row => {
+        const badge = row.missing > 0 ? `<span class="badge badge-danger">Has Errors</span>` : `<span class="badge badge-success">Success</span>`;
+        let chanBadge = `<span style="font-weight:600; color:var(--brand-navy);">${esc(row.channel)}</span>`;
+        if (row.channel === 'GINESYS') {
+          chanBadge = `<span style="display:inline-flex; align-items:center; gap:6px; font-weight:700; color:#fff; background:var(--brand-orange); padding:3px 10px; border-radius:6px; font-size:12px;">GINESYS TO</span>`;
+        }
+        return `
+          <tr>
+            <td>${esc(row.timestamp)}</td>
+            <td>${chanBadge}</td>
+            <td><span style="display:inline-flex; align-items:center; gap:6px; font-weight:600; color:var(--brand-orange); background:rgba(235,129,49,0.08); padding:3px 10px; border-radius:6px;">${esc(row.warehouse || '—')}</span></td>
+            <td>${esc(row.ebo_type || '—')}</td>
+            <td>${row.invoices}</td>
+            <td>${row.sku_lines}</td>
+            <td>${Number(row.total_qty || 0).toLocaleString()}</td>
+            <td>${badge}</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No processing history found.</td></tr>`;
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#fca5a5;">Failed to load history.</td></tr>`;
+  }
+}
+
+function selectChannel(val, el) {
+  document.querySelectorAll('#step-1 .option-item').forEach(c => c.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  
+  state.channel = val;
+  const alertBox = document.getElementById('channel-alert');
+  const stepWh = document.getElementById('step-warehouse');
+  const stepMv = document.getElementById('step-movement');
+  const stepLfr = document.getElementById('step-lfr-customer');
+  const step3 = document.getElementById('step-3');
+  const resContainer = document.getElementById('result-container');
+  const ginesysSec = document.getElementById('section-ginesys');
+  const uploadStepNum = document.getElementById('upload-step-num');
+
+  state.warehouse = null;
+  state.eboType = null;
+  document.querySelectorAll('#grid-warehouses .option-item').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#grid-movement .option-item').forEach(c => c.classList.remove('selected'));
+  if (resContainer) resContainer.style.display = 'none';
+
+  if (val === 'GINESYS') {
+    alertBox.style.display = 'none';
+    stepWh.classList.add('hidden');
+    stepMv.classList.add('hidden');
+    stepLfr.classList.add('hidden');
+    step3.classList.add('hidden');
+    ginesysSec.style.display = 'block';
+    document.getElementById('top-title').textContent = 'Ginesys Transfer Out';
+    document.getElementById('main-heading').textContent = 'Ginesys Transfer Out';
+    document.getElementById('main-subheading').textContent = 'Process Odoo dispatches into live Ginesys Adhoc DC & Transfer Out WebAPI.';
+    fetchGinesysOperators();
+    fetchGinesysConfig();
+    ginesysSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  ginesysSec.style.display = 'none';
+  document.getElementById('main-heading').textContent = 'Generate Odoo Import';
+  document.getElementById('main-subheading').textContent = 'Process your dispatch files into Odoo-ready intelligent data.';
+  document.getElementById('top-title').textContent = 'Sales Generation';
+
+  if(val === 'D2C') {
+    alertBox.style.display = 'flex';
+    alertBox.querySelector('span').textContent = 'Logic is currently not configured for D2C stores.';
+    stepWh.classList.add('hidden');
+    stepMv.classList.add('hidden');
+    stepLfr.classList.add('hidden');
+    step3.classList.add('hidden');
+  } else if(val === 'LFR') {
+    alertBox.style.display = 'none';
+    stepWh.classList.add('hidden');
+    stepMv.classList.add('hidden');
+    stepLfr.classList.remove('hidden', 'disabled');
+    
+    document.getElementById('grid-ebo').style.display = 'none';
+    document.getElementById('grid-lfr').style.display = 'grid';
+    uploadStepNum.textContent = '03';
+    step3.classList.add('hidden');
+    fetchLFRCustomers();
+  } else { // EBO
+    alertBox.style.display = 'none';
+    stepLfr.classList.add('hidden');
+    stepWh.classList.remove('hidden', 'disabled');
+    stepMv.classList.add('hidden');
+    
+    document.getElementById('grid-ebo').style.display = 'grid';
+    document.getElementById('grid-lfr').style.display = 'none';
+    uploadStepNum.textContent = '04';
+    step3.classList.add('hidden');
+  }
+  checkSubmit();
+}
+
+async function fetchGinesysOperators() {
+  const sel = document.getElementById('ginesys-operator-select');
+  if (sel.options.length > 0 && sel.value) {
+    state.ginesysOperatorId = sel.value;
+  }
+  try {
+    const res = await fetch('/api/ginesys/operators');
+    const data = await res.json();
+    if (data.success && data.operators && data.operators.length > 0) {
+      const curVal = sel.value;
+      sel.innerHTML = data.operators.map(op => {
+        const role = op.role === 'admin' ? ' [Admin]' : '';
+        const selAttr = String(op.id) === String(curVal) ? ' selected' : '';
+        return `<option value="${op.id}"${selAttr}>${esc(op.display_name || op.username)}${role} (${esc(op.ginesys_username)})</option>`;
+      }).join('');
+      state.ginesysOperatorId = sel.value;
+    }
+  } catch (e) {
+    if (sel.options.length === 0 || !sel.value) {
+      sel.innerHTML = '<option value="">Click to retry loading operators</option>';
+    }
+  }
+}
+
+async function fetchGinesysConfig() {
+  try {
+    const res = await fetch('/api/ginesys/config');
+    const data = await res.json();
+    if (data.success) {
+      state.ginesysConfig = data;
+      const b = document.getElementById('ginesys-badge');
+      if (b) {
+        b.className = 'badge badge-success';
+        b.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span> WebAPI Active (Site ${data.ownerSiteCode})`;
+      }
+    }
+  } catch (e) {}
+}
+
+function onGinesysOperatorChanged() {
+  state.ginesysOperatorId = document.getElementById('ginesys-operator-select').value;
+}
+
+async function testGinesysConnection(logoutExisting = false) {
+  const btn = document.getElementById('btn-test-ginesys');
+  const spin = document.getElementById('spin-test-ginesys');
+  const txt = document.getElementById('txt-test-ginesys');
+  const alertBox = document.getElementById('ginesys-conn-alert');
+  
+  btn.disabled = true;
+  spin.style.display = 'block';
+  txt.textContent = 'Testing...';
+  alertBox.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/ginesys/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        operator_id: state.ginesysOperatorId || document.getElementById('ginesys-operator-select')?.value,
+        logout_existing_session: logoutExisting
+      })
+    });
+    const data = await res.json();
+    if (res.status === 409 && data.requiresSessionLogout) {
+      const confirmLogout = confirm(data.error + '\n\nClick OK to close existing session and connect.');
+      if (confirmLogout) {
+        return testGinesysConnection(true);
+      } else {
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#fefce8';
+        alertBox.style.color = '#854d0e';
+        alertBox.style.border = '1px solid #fde047';
+        alertBox.textContent = 'Connection paused: Active session exists elsewhere.';
+        return;
+      }
+    }
+    if (!data.success) throw new Error(data.error);
+
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#ecfdf5';
+    alertBox.style.color = '#065f46';
+    alertBox.style.border = '1px solid #86efac';
+    alertBox.textContent = data.message || 'Ginesys WebAPI connection verified successfully!';
+  } catch (e) {
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#fef2f2';
+    alertBox.style.color = '#991b1b';
+    alertBox.style.border = '1px solid #fca5a5';
+    alertBox.textContent = 'Connection test failed: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+    txt.textContent = 'Test Connection';
+  }
+}
+
+function onGinesysFilesPicked(inputOrFiles) {
+  const files = inputOrFiles.files || inputOrFiles;
+  if (!files || files.length === 0) return;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    if (!state.ginesysFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
+      state.ginesysFiles.push(f);
+    }
+  }
+  if (inputOrFiles.value !== undefined) inputOrFiles.value = '';
+  renderGinesysFileList();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const dropBox = document.getElementById('z-ginesys');
+  if (dropBox) {
+    ['dragenter', 'dragover'].forEach(name => {
+      dropBox.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropBox.style.borderColor = 'var(--brand-orange)';
+        dropBox.style.background = 'rgba(235, 129, 49, 0.05)';
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropBox.addEventListener(name, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropBox.style.borderColor = '';
+        dropBox.style.background = '';
+      });
+    });
+    dropBox.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+        onGinesysFilesPicked(e.dataTransfer.files);
+      }
+    });
+  }
+});
+
+function renderGinesysFileList() {
+  const container = document.getElementById('ginesys-file-list');
+  const btnVal = document.getElementById('btn-ginesys-validate');
+  if (state.ginesysFiles.length === 0) {
+    container.innerHTML = '';
+    btnVal.disabled = true;
+    return;
+  }
+  btnVal.disabled = false;
+  container.innerHTML = state.ginesysFiles.map((f, idx) => {
+    const sizeKb = Math.round(f.size / 1024);
+    return `
+      <div class="file-chip" onclick="event.stopPropagation()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>${esc(f.name)} (${sizeKb} KB)</span>
+        <span class="remove-chip" title="Remove" onclick="removeGinesysFile(${idx}, event)">&times;</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function removeGinesysFile(idx, ev) {
+  if (ev) ev.stopPropagation();
+  state.ginesysFiles.splice(idx, 1);
+  renderGinesysFileList();
+}
+
+async function validateGinesysFiles() {
+  if (state.ginesysFiles.length === 0) return;
+  const btn = document.getElementById('btn-ginesys-validate');
+  const spin = document.getElementById('spin-ginesys-validate');
+  const txt = document.getElementById('txt-ginesys-validate');
+  const previewCard = document.getElementById('card-ginesys-preview');
+  const resultsCard = document.getElementById('card-ginesys-results');
+
+  btn.disabled = true;
+  spin.style.display = 'block';
+  txt.textContent = 'Parsing & Prechecking...';
+  previewCard.classList.add('hidden');
+  resultsCard.classList.add('hidden');
+  document.getElementById('chk-ginesys-confirm').checked = false;
+  document.getElementById('btn-ginesys-post').disabled = true;
+
+  try {
+    const fd = new FormData();
+    state.ginesysFiles.forEach(f => fd.append('files', f));
+    const opId = state.ginesysOperatorId || document.getElementById('ginesys-operator-select')?.value;
+    if (opId) fd.append('operator_id', opId);
+
+    const res = await fetch('/api/ginesys/validate', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (res.status === 409 && data.requiresSessionLogout) {
+      const confirmLogout = confirm(data.error + '\n\nClick OK to close existing session and retry.');
+      if (confirmLogout) {
+        await testGinesysConnection(true);
+        return validateGinesysFiles();
+      }
+    }
+    if (!data.success) throw new Error(data.error);
+
+    state.ginesysJobId = data.jobId;
+
+    // Fill summary metrics
+    document.getElementById('gv-docs').textContent = data.summary.documents || 0;
+    document.getElementById('gv-stores').textContent = data.summary.stores || 0;
+    document.getElementById('gv-lines').textContent = data.summary.validLines || 0;
+    document.getElementById('gv-qty').textContent = Number(data.summary.totalQty || 0).toLocaleString();
+
+    // Breakdown
+    document.getElementById('gpre-new').textContent = `${data.summary.notFound || 0} Documents Ready for New DC`;
+    const dcBox = document.getElementById('gpre-dc-box');
+    if (data.summary.dcOnly > 0) {
+      dcBox.style.display = 'inline-flex';
+      document.getElementById('gpre-dc').textContent = `${data.summary.dcOnly} have existing DC (Transfer Out Pending)`;
+    } else {
+      dcBox.style.display = 'none';
+    }
+
+    const doneBox = document.getElementById('gpre-done-box');
+    if (data.summary.alreadyCreated > 0) {
+      doneBox.style.display = 'inline-flex';
+      document.getElementById('gpre-done').textContent = `${data.summary.alreadyCreated} already fully created`;
+    } else {
+      doneBox.style.display = 'none';
+    }
+
+    // Warnings
+    const warnBox = document.getElementById('ginesys-warn-box');
+    const warnList = document.getElementById('ginesys-warn-list');
+    if (data.warnings && data.warnings.length > 0) {
+      warnList.innerHTML = data.warnings.map(w => `<li>${esc(w)}</li>`).join('');
+      warnBox.style.display = 'block';
+    } else {
+      warnBox.style.display = 'none';
+    }
+
+    // Preview table
+    const tbody = document.getElementById('ginesys-preview-tbody');
+    tbody.innerHTML = (data.preview || []).map(row => {
+      let stBadge = '<span class="badge badge-success">Ready</span>';
+      if (row.ginesysStatus === 'TRANSFER_EXISTS') stBadge = '<span class="badge badge-info">Created</span>';
+      else if (row.ginesysStatus === 'DC_EXISTS') stBadge = '<span class="badge badge-warning">DC Only</span>';
+
+      return `
+        <tr>
+          <td style="font-weight:700; color:var(--brand-navy);">${esc(row.reference)}</td>
+          <td>${esc(row.date)}</td>
+          <td>${esc(row.store)}</td>
+          <td><span style="font-weight:600; color:var(--brand-orange);">${esc(row.siteCode)}</span></td>
+          <td>${stBadge}</td>
+          <td>${esc(row.dcNumber || '—')}</td>
+          <td>${esc(row.state || '—')}</td>
+          <td><span style="font-size:11px; font-family:monospace;">${esc(row.gstinConfigured ? '✓ Yes' : 'Missing')}</span></td>
+          <td>${row.lines}</td>
+          <td style="font-weight:700;">${Number(row.qty || 0).toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
+
+    previewCard.classList.remove('hidden');
+    previewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    alert('Validation failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+    txt.textContent = 'Validate & Build Posting Preview';
+  }
+}
+
+function onGinesysConfirmChanged() {
+  const chk = document.getElementById('chk-ginesys-confirm');
+  const btn = document.getElementById('btn-ginesys-post');
+  btn.disabled = !chk.checked;
+}
+
+async function postGinesysJob() {
+  if (!state.ginesysJobId) return;
+  const btn = document.getElementById('btn-ginesys-post');
+  const spin = document.getElementById('spin-ginesys-post');
+  const txt = document.getElementById('txt-ginesys-post');
+  const resultsCard = document.getElementById('card-ginesys-results');
+
+  btn.disabled = true;
+  spin.style.display = 'block';
+  txt.textContent = 'Posting to Ginesys...';
+
+  try {
+    const postOpId = state.ginesysOperatorId || document.getElementById('ginesys-operator-select')?.value;
+    const res = await fetch(`/api/ginesys/post/${state.ginesysJobId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ operator_id: postOpId })
+    });
+    const data = await res.json();
+    if (res.status === 409 && data.requiresSessionLogout) {
+      const confirmLogout = confirm(data.error + '\n\nClick OK to close existing session and retry.');
+      if (confirmLogout) {
+        await testGinesysConnection(true);
+        return postGinesysJob();
+      }
+    }
+    if (!data.success) throw new Error(data.error);
+
+    renderGinesysResults(data);
+  } catch (e) {
+    alert('Posting error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+    txt.textContent = 'POST TO GINESYS';
+  }
+}
+
+function renderGinesysResults(data) {
+  const resultsCard = document.getElementById('card-ginesys-results');
+  const sm = data.summary || {};
+  document.getElementById('gr-total').textContent = sm.total || 0;
+  document.getElementById('gr-success').textContent = sm.success || 0;
+  document.getElementById('gr-failed').textContent = sm.failed || 0;
+  document.getElementById('gr-skipped').textContent = (sm.total - sm.success - sm.failed) || 0;
+
+  if (data.downloadUrl) {
+    document.getElementById('btn-ginesys-download').href = data.downloadUrl;
+  }
+
+  const tbody = document.getElementById('ginesys-results-tbody');
+  tbody.innerHTML = (data.results || []).map(r => {
+    const isOk = r.status === 'SUCCESS' || r.status === 'TRANSFER_EXISTS';
+    const badge = isOk ? '<span class="badge badge-success">Success</span>' : '<span class="badge badge-danger">Failed</span>';
+    return `
+      <tr>
+        <td style="font-weight:700; color:var(--brand-navy);">${esc(r.reference)}</td>
+        <td>${esc(r.store_name)}</td>
+        <td><strong style="color:var(--brand-orange);">${esc(r.dc_number || r.dc_code || '—')}</strong></td>
+        <td><strong style="color:#059669;">${esc(r.transfer_number || r.transfer_code || '—')}</strong></td>
+        <td>${badge}</td>
+        <td style="color:${isOk ? '#059669' : '#dc2626'}; font-size:12px;">${esc(r.error || 'Posted successfully')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const retryBtn = document.getElementById('btn-ginesys-retry');
+  if (sm.failed > 0) {
+    retryBtn.style.display = 'inline-flex';
+  } else {
+    retryBtn.style.display = 'none';
+  }
+
+  resultsCard.classList.remove('hidden');
+  resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function retryGinesysFailed() {
+  if (!state.ginesysJobId) return;
+  const btn = document.getElementById('btn-ginesys-retry');
+  const spin = document.getElementById('spin-ginesys-retry');
+  btn.disabled = true;
+  spin.style.display = 'block';
+
+  try {
+    const res = await fetch(`/api/ginesys/retry/${state.ginesysJobId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ operator_id: state.ginesysOperatorId || document.getElementById('ginesys-operator-select')?.value })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    renderGinesysResults(data);
+  } catch (e) {
+    alert('Retry failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+  }
+}
+
+function selectWarehouse(val, el) {
+  document.querySelectorAll('#grid-warehouses .option-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  
+  state.warehouse = val;
+  const stepMv = document.getElementById('step-movement');
+  const step3 = document.getElementById('step-3');
+  const uploadStepNum = document.getElementById('upload-step-num');
+  const autoInfo = document.getElementById('auto-routing-info');
+
+  if (val === 'Bagalur') {
+    state.eboType = null;
+    document.querySelectorAll('#grid-movement .option-item').forEach(c => c.classList.remove('selected'));
+    stepMv.classList.remove('hidden', 'disabled');
+    step3.classList.add('hidden');
+    uploadStepNum.textContent = '04';
+    if (autoInfo) autoInfo.style.display = 'none';
+    stepMv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    // Bhiwandi, Kolkata, Gurgaon - automatic state routing, no manual prompt
+    state.eboType = 'Auto';
+    stepMv.classList.add('hidden');
+    step3.classList.remove('hidden', 'disabled');
+    uploadStepNum.textContent = '03';
+    if (autoInfo) {
+      const stateMap = { 'Bhiwandi': 'Maharashtra (MH)', 'Kolkata': 'West Bengal (WB)', 'Gurgaon': 'Haryana (HR)' };
+      autoInfo.querySelector('span').textContent = `Automatic Routing Active for ${val}: Stores in ${stateMap[val] || val} will be routed as Internal Transfers, and out-of-state stores will be routed as External Sales Orders.`;
+      autoInfo.style.display = 'flex';
+    }
+    step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  checkSubmit();
+}
+
+function selectMovement(val, el) {
+  document.querySelectorAll('#grid-movement .option-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  
+  state.eboType = val;
+  const step3 = document.getElementById('step-3');
+  const autoInfo = document.getElementById('auto-routing-info');
+  if (autoInfo) autoInfo.style.display = 'none';
+  step3.classList.remove('hidden', 'disabled');
+  step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  checkSubmit();
+}
+
+function filePicked(input, zoneId, badgeId, key) {
+  const f = input.files[0];
+  if(!f) return;
+  state.files[key] = f;
+  
+  const zone = document.getElementById(zoneId);
+  zone.classList.add('has-file');
+  zone.querySelector('.up-icon').style.display = 'none';
+  zone.querySelector('.up-title').style.display = 'none';
+  zone.querySelector('.up-desc').style.display = 'none';
+  
+  const badge = document.getElementById(badgeId);
+  badge.querySelector('.fname').textContent = f.name;
+  badge.classList.add('show');
+  checkSubmit();
+}
+
+function removeFile(inputId, zoneId, badgeId, key) {
+  state.files[key] = null;
+  document.getElementById(inputId).value = '';
+  
+  const zone = document.getElementById(zoneId);
+  zone.classList.remove('has-file');
+  zone.querySelector('.up-icon').style.display = 'flex';
+  zone.querySelector('.up-title').style.display = 'block';
+  zone.querySelector('.up-desc').style.display = 'block';
+  
+  document.getElementById(badgeId).classList.remove('show');
+  checkSubmit();
+}
+
+function checkSubmit() {
+  const btn = document.getElementById('btn-process');
+  let ready = false;
+  if(state.channel === 'EBO') {
+    ready = state.warehouse && state.eboType && state.files.pl && state.files.cdb && state.files.pm;
+  } else if(state.channel === 'LFR') {
+    ready = state.files.lfr_main && state.files.lfr_mrp && state.files.lfr_odoo && state.files.lfr_pm && state.lfrCustomer;
+  }
+  btn.disabled = !ready;
+}
+
+async function processFiles() {
+  const btn = document.getElementById('btn-process');
+  const spin = document.getElementById('spin');
+  const txt = document.getElementById('btn-txt');
+  const resContainer = document.getElementById('result-container');
+
+  btn.disabled = true;
+  spin.style.display = 'block';
+  txt.textContent = 'Executing...';
+  resContainer.style.display = 'none';
+
+  try {
+    const fd = new FormData();
+    fd.append('channel', state.channel);
+    
+    if (state.channel === 'EBO') {
+        fd.append('packing_list', state.files.pl);
+        fd.append('customer_db', state.files.cdb);
+        fd.append('product_master', state.files.pm);
+        fd.append('warehouse', state.warehouse);
+        fd.append('ebo_type', state.eboType);
+    } else if (state.channel === 'LFR') {
+        fd.append('lfr_main', state.files.lfr_main);
+        fd.append('lfr_mrp', state.files.lfr_mrp);
+        fd.append('lfr_odoo', state.files.lfr_odoo);
+        fd.append('lfr_pm', state.files.lfr_pm);
+        fd.append('lfr_customer', state.lfrCustomer);
+        fd.append('lfr_margin', state.lfrMargin);
+    }
+
+    const res = await fetch('/process', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if(!data.success) throw new Error(data.error);
+
+    const s = data.stats;
+    document.getElementById('s-inv').textContent = s.invoices;
+    document.getElementById('s-lines').textContent = s.sku_lines;
+    document.getElementById('s-qty').textContent = s.total_qty;
+    
+    const sMiss = document.getElementById('s-miss');
+    sMiss.textContent = s.missing;
+    if(s.missing === 0) sMiss.classList.remove('error');
+
+    // Routing badge & download buttons
+    const badge = document.getElementById('routing-summary-badge');
+    const btnExt = document.getElementById('btn-dl-external');
+    const btnInt = document.getElementById('btn-dl-internal');
+    const btnAll = document.getElementById('btn-dl-all');
+
+    if (s.has_external && s.has_internal) {
+      badge.innerHTML = `<strong>Auto-Split Complete:</strong> Generated <strong>${s.external_invoices}</strong> External Orders (${s.external_lines} lines) and <strong>${s.internal_invoices}</strong> Internal Transfers (${s.internal_lines} lines). Download them individually or combined below:`;
+      badge.style.display = 'block';
+      btnExt.style.display = 'inline-flex';
+      btnInt.style.display = 'inline-flex';
+      btnAll.style.display = 'inline-flex';
+      btnAll.textContent = 'Download Combined File (All Orders)';
+    } else if (s.has_internal) {
+      badge.innerHTML = `<strong>Internal Transfers:</strong> Generated <strong>${s.internal_invoices}</strong> Internal Transfer Orders (${s.internal_lines} lines).`;
+      badge.style.display = 'block';
+      btnExt.style.display = 'none';
+      btnInt.style.display = 'inline-flex';
+      btnAll.style.display = 'none';
+    } else {
+      badge.innerHTML = `<strong>External Sales Orders:</strong> Generated <strong>${s.external_invoices || s.invoices}</strong> External Sales Orders (${s.external_lines || s.sku_lines} lines).`;
+      badge.style.display = 'block';
+      btnExt.style.display = 'inline-flex';
+      btnInt.style.display = 'none';
+      btnAll.style.display = 'none';
+    }
+
+    const warnBox = document.getElementById('warn-box');
+    if(s.missing > 0) {
+      document.getElementById('warn-list').innerHTML = s.logs.map(l => `<li>${l}</li>`).join('');
+      warnBox.classList.add('show');
+    } else {
+      warnBox.classList.remove('show');
+    }
+
+    resContainer.style.display = 'block';
+  } catch(e) {
+    alert('Processing error: ' + e.message);
+  } finally {
+    checkSubmit();
+    spin.style.display = 'none';
+    txt.textContent = 'Proceed';
+  }
+}
+</script>
+</body>
+</html>

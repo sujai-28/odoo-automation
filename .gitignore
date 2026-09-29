@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+*.egg-info/
+
+# Secrets – NEVER commit these
+.env
+Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/.env
+
+# Databases (ephemeral / local only)
+history.db
+*.db
+
+# Local runtime data
+Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/jobs/*
+Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/results/*
+Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/uploads/*
+Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/session_secret.key
+!Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/jobs/.gitkeep
+!Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/results/.gitkeep
+!Odoo_Ginesys_DC_TransferOut_Automation_V4_5_WorkDateFix/portal-data/uploads/.gitkeep
+output/
+
+# Binaries
+*.exe
+
+# Node
+node_modules/
+
+# Vercel
+.vercel/

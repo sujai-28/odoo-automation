@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Login & Registration | Odoo Automation Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --brand-navy: #0A1128;
+  --brand-navy-light: #162447;
+  --brand-orange: #eb8131;
+  --brand-orange-hover: #d77123;
+  --bg-light: #ffffff;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+body {
+  background: linear-gradient(135deg, #e4e9f0 0%, #d8e1ed 50%, #eaedf3 100%);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.login-wrapper {
+  display: flex;
+  width: 950px;
+  min-height: 600px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(10, 17, 40, 0.18);
+  overflow: hidden;
+}
+
+/* LEFT SIDE - BRANDING */
+.branding-side {
+  flex: 1;
+  background: linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light));
+  position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 50px;
+  color: #fff;
+  overflow: hidden;
+}
+.branding-side::before {
+  content: ''; position: absolute; width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(235,129,49,0.18) 0%, transparent 65%);
+  bottom: -100px; right: -100px; border-radius: 50%;
+}
+.branding-side::after {
+  content: ''; position: absolute; width: 280px; height: 280px;
+  border: 1px solid rgba(255,255,255,0.08);
+  top: -50px; left: -50px; border-radius: 50%;
+}
+.dots {
+  position: absolute; top: 40px; right: 40px;
+  width: 40px; height: 40px;
+  background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
+  background-size: 12px 12px;
+}
+.brand-text {
+  position: relative; z-index: 10; margin-top: auto; margin-bottom: 20px;
+}
+.brand-text h1 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+.brand-text p { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 400; line-height: 1.5; }
+
+/* RIGHT SIDE - FORM */
+.form-side {
+  flex: 1.15;
+  background: var(--bg-light);
+  padding: 50px 50px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.form-header { text-align: center; margin-bottom: 24px; }
+.form-header img { 
+  height: 48px; margin-bottom: 12px; border-radius: 12px; 
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06); 
+  background: #fff; padding: 6px;
+}
+.form-header h2 { font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; letter-spacing: -0.5px;}
+.form-header p { font-size: 13px; color: var(--text-muted); }
+
+/* TAB SWITCHER */
+.tab-container {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active {
+  background: #fff;
+  color: var(--text-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.form-content { display: none; animation: fadeIn 0.25s ease-in-out; }
+.form-content.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.input-group { margin-bottom: 18px; }
+.input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+.input-wrapper {
+  position: relative;
+  display: flex; align-items: center;
+}
+.input-wrapper svg {
+  position: absolute; left: 16px; width: 18px; height: 18px; color: var(--text-muted);
+}
+.input-wrapper input {
+  width: 100%; padding: 13px 16px 13px 44px; border-radius: 10px;
+  background: #fff; border: 1px solid var(--border-color);
+  color: var(--text-dark); font-size: 14px; outline: none;
+  transition: all 0.2s; font-weight: 500;
+}
+.input-wrapper input::placeholder { color: #a1a1aa; font-weight: 400; }
+.input-wrapper input:focus { border-color: var(--brand-orange); box-shadow: 0 0 0 4px rgba(235, 129, 49, 0.12); }
+
+.form-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.checkbox-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 500;}
+.checkbox-wrap input { cursor: pointer; accent-color: var(--brand-orange); width: 14px; height: 14px; }
+.forgot-link { font-size: 13px; font-weight: 700; color: var(--text-dark); text-decoration: none; transition: 0.2s;}
+.forgot-link:hover { color: var(--brand-orange); }
+
+.btn-primary {
+  width: 100%; background: var(--brand-orange); color: #fff; border: none;
+  padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(235, 129, 49, 0.3);
+  letter-spacing: 0.3px;
+}
+.btn-primary:hover { background: var(--brand-orange-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(235, 129, 49, 0.4); }
+
+.alert-error {
+  color: #dc2626; background: #fef2f2; border-radius: 10px; padding: 10px 14px;
+  font-size: 13px; margin-bottom: 18px; border: 1px solid #fca5a5; text-align: center; font-weight: 600;
+}
+.alert-success {
+  color: #166534; background: #f0fdf4; border-radius: 10px; padding: 10px 14px;
+  font-size: 13px; margin-bottom: 18px; border: 1px solid #86efac; text-align: center; font-weight: 600;
+}
+</style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <!-- Branding Side (Left) -->
+    <div class="branding-side">
+      <div class="dots"></div>
+      <div class="brand-text">
+        <h1>Automation<br/>Starts Here</h1>
+        <p>Log in or create a new account to access your Odoo dispatch integration and automate your workflow effortlessly.</p>
+      </div>
+    </div>
+    
+    <!-- Form Side (Right) -->
+    <div class="form-side">
+      <div class="form-header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Technosport Logo" />
+        <h2>Welcome to Odoo Automation</h2>
+        <p>Please enter your account details below</p>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="tab-container">
+        <button type="button" class="tab-btn {% if active_tab != 'register' %}active{% endif %}" onclick="switchTab('login')">Log In</button>
+        <button type="button" class="tab-btn {% if active_tab == 'register' %}active{% endif %}" onclick="switchTab('register')">Create Account</button>
+      </div>
+      
+      <!-- LOG IN FORM -->
+      <div id="login-tab" class="form-content {% if active_tab != 'register' %}active{% endif %}">
+        {% if error %}
+        <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/login">
+          <div class="input-group">
+            <label>Email ID / Username</label>
+            <div class="input-wrapper">
+              <!-- Mail Icon -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              <input type="text" name="email" value="{{ login_email or '' }}" placeholder="Enter your Email ID or username" required autofocus autocomplete="email" />
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label>Password</label>
+            <div class="input-wrapper">
+              <!-- Lock Icon -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <input type="password" name="password" placeholder="••••••••••••" required />
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <label class="checkbox-wrap">
+              <input type="checkbox" name="remember" /> Remember me
+            </label>
+            <a href="#" class="forgot-link">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn-primary">Log In</button>
+        </form>
+      </div>
+
+      <!-- CREATE ACCOUNT FORM -->
+      <div id="register-tab" class="form-content {% if active_tab == 'register' %}active{% endif %}">
+        {% if signup_error %}
+        <div class="alert-error">{{ signup_error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/register" onsubmit="return validateRegisterForm(this)">
+          <div class="input-group">
+            <label>Email ID</label>
+            <div class="input-wrapper">
+              <!-- Mail Icon -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              <input type="email" name="email" value="{{ signup_email or '' }}" placeholder="user@technosport.in" required autocomplete="email" />
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label>Create Password</label>
+            <div class="input-wrapper">
+              <!-- Lock Icon -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <input type="password" id="reg-password" name="password" placeholder="At least 6 characters" required minlength="6" />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <div class="input-wrapper">
+              <!-- Lock Check Icon -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              <input type="password" id="reg-confirm-password" name="confirm_password" placeholder="Re-enter your password" required minlength="6" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top: 10px;">Create Account</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+function switchTab(tab) {
+  const loginTab = document.getElementById('login-tab');
+  const registerTab = document.getElementById('register-tab');
+  const btns = document.querySelectorAll('.tab-btn');
+
+  if (tab === 'login') {
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+    btns[0].classList.add('active');
+    btns[1].classList.remove('active');
+  } else {
+    registerTab.classList.add('active');
+    loginTab.classList.remove('active');
+    btns[1].classList.add('active');
+    btns[0].classList.remove('active');
+  }
+}
+
+function validateRegisterForm(form) {
+  const pwd = form.querySelector('#reg-password').value;
+  const confirmPwd = form.querySelector('#reg-confirm-password').value;
+  if (pwd !== confirmPwd) {
+    alert('Passwords do not match. Please re-enter.');
+    return false;
+  }
+  return true;
+}
+</script>
+</body>
+</html>

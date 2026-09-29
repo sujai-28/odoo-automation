@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Audit Log | Odoo to Ginesys</title><link rel="stylesheet" href="/static/styles.css">
+</head>
+<body><main class="shell">
+  <nav class="topbar">
+    <a class="brand" href="/"><strong>TS</strong><span>Ginesys TO</span></a>
+    <div class="userbar"><button class="user-identity" id="test-connection-btn" type="button" title="Click to test your Ginesys connection"><span class="user-name">{{ user.display_name }}</span><span class="user-auth-time" id="user-auth-time">Last authenticated: —</span></button><a href="/">Portal</a><button id="logout-btn" type="button">Logout</button></div>
+  </nav>
+  <header class="hero compact-hero"><span class="eyebrow">ADMIN AUDIT</span><h1>Activity Log</h1><p>Header-level history of logins, connection tests, validation, posting, and user administration.</p></header>
+  <section class="card results-card">
+    <div class="section-head"><div><h2>Recent Activity</h2><p>Showing the latest 500 events. Times are displayed in your local timezone.</p></div><button class="row-action" id="refresh-audit-btn" type="button">Refresh</button></div>
+    <div class="table-wrap audit-table"><table><thead><tr><th>Time</th><th>Ginesys User</th><th>Name</th><th>Action</th><th>Status</th><th>Details</th><th>IP</th></tr></thead><tbody id="audit-body"></tbody></table></div>
+  </section>
+</main><script src="/static/audit.js"></script></body></html>

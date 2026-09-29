@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login | Odoo to Ginesys</title><link rel="stylesheet" href="/static/styles.css">
+</head>
+<body><main class="auth-shell">
+  <a class="brand auth-brand" href="/"><strong>TS</strong><span>Ginesys TO</span></a>
+  <section class="card auth-card">
+    <span class="eyebrow">SECURE PORTAL</span>
+    <h1>Login</h1>
+    <p>Use the same username and password you use in Ginesys Web.</p>
+    <form id="login-form" class="stack-form">
+      <label>Ginesys Username<input name="username" autocomplete="username" required></label>
+      <label>Ginesys Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <div class="form-error" id="form-error" hidden></div>
+      <button class="primary" type="submit"><span>Login</span><b>&rarr;</b></button>
+    </form>
+  </section>
+</main><script src="/static/auth.js"></script></body></html>

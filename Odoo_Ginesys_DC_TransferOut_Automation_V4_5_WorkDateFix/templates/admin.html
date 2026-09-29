@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin | Odoo to Ginesys</title><link rel="stylesheet" href="/static/styles.css">
+</head>
+<body><main class="shell">
+  <nav class="topbar">
+    <a class="brand" href="/"><strong>TS</strong><span>Ginesys TO</span></a>
+    <div class="userbar"><button class="user-identity" id="test-connection-btn" type="button" title="Click to test your Ginesys connection"><span class="user-name">{{ user.display_name }}</span><span class="user-auth-time" id="user-auth-time">Last authenticated: —</span></button><a href="/">Portal</a><a href="/audit">Audit</a><button id="logout-btn" type="button">Logout</button></div>
+  </nav>
+  <header class="hero compact-hero"><span class="eyebrow">USER ADMIN</span><h1>Portal Users</h1><p>Manage each user's portal login and private Ginesys connection.</p></header>
+  <section class="card">
+    <div class="section-head"><div><h2>Authorize Ginesys User</h2><p>Add the user's Ginesys identity and portal role. Users enter their own Ginesys password when signing in.</p></div></div>
+    <form id="user-form" class="grid-form">
+      <input type="hidden" name="id" id="edit-user-id">
+      <label>Display Name<input name="display_name" required></label>
+      <label>Ginesys Username<input name="ginesys_username" autocomplete="off" required></label>
+      <label>Role<select name="role"><option value="operator">Operator</option><option value="admin">Admin</option></select></label>
+      <div class="form-error" id="form-error" hidden></div>
+      <button class="primary" id="save-user-btn" type="submit"><span>Create User</span><b>+</b></button>
+      <button class="secondary" id="cancel-edit-btn" type="button" hidden><span>Cancel Edit</span><b>x</b></button>
+    </form>
+  </section>
+  <section class="card results-card">
+    <div class="section-head"><div><h2>Existing Users</h2><p>Inactive users cannot login or post.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Ginesys Username</th><th>Name</th><th>Connection</th><th>Last Authenticated</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody id="users-body"></tbody></table></div>
+  </section>
+</main><script src="/static/auth.js"></script></body></html>
