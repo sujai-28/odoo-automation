@@ -62,6 +62,13 @@ _SEED_DB = GINESYS / "portal.db"
 if _SEED_DB.exists() and not (TMP / "portal.db").exists():
     shutil.copy2(_SEED_DB, TMP / "portal.db")
 
+# ── 4c. Patch audit_store and storage DB paths to /tmp ──────────────────────
+import audit_store as _audit
+_audit.DB_PATH = TMP / "portal.db"
+
+import storage as _storage
+_storage.DB_PATH = TMP / "portal.db"
+
 # ── 5. Import the main Flask application ────────────────────────────────────
 # app.py at the project root is the real application
 import importlib.util, types
