@@ -15,13 +15,31 @@ _DUPLICATE_DOC_NO_PATTERNS = (
     "duplicate document no",
     "document no. is not allowed",
     "document number already exists",
+    "please change it",  # broad fallback for Ginesys doc-no errors
 )
 
 
 def _is_duplicate_document_no_error(exc: Exception) -> bool:
-    """Return True when Ginesys rejected SI/Save because the document number already exists."""
+    """Return True when Ginesys rejected SI/Save because the document number already exists.
+
+    Checks both the exception message string AND the raw Ginesys response body so that
+    the detection is robust regardless of how the error message is formatted/truncated.
+    """
     msg = str(exc).lower()
-    return any(pat in msg for pat in _DUPLICATE_DOC_NO_PATTERNS)
+    if any(pat in msg for pat in _DUPLICATE_DOC_NO_PATTERNS):
+        return True
+    # Also inspect the raw Ginesys response body when available (GinesysError.body)
+    from ginesys_client import GinesysError as _GE
+    if isinstance(exc, _GE) and isinstance(exc.body, dict):
+        result = exc.body.get("result") if isinstance(exc.body, dict) else None
+        for container in (exc.body, result):
+            if not isinstance(container, dict):
+                continue
+            for err in (container.get("validationErrors") or []):
+                err_msg = str(err.get("errorMessage", "")).lower()
+                if any(pat in err_msg for pat in _DUPLICATE_DOC_NO_PATTERNS):
+                    return True
+    return False
 
 
 def _row_from_state(doc: dict, state: dict, status_override: str | None = None) -> dict:
