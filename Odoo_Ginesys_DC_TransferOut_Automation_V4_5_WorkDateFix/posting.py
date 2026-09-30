@@ -233,27 +233,33 @@ def _post_single_document(doc: dict, config: AppConfig, operator: dict | None = 
             invoice = client.post_invoice(doc, int(dc_code), operator=operator)
         except GinesysError as inv_exc:
             if _is_duplicate_document_no_error(inv_exc):
-                # The Transfer Out was already created in a previous run but not recorded
-                # locally. Re-scan GetAdhocList to recover the existing SI details.
+                # The "Duplicate Document No." error PROVES the SI was already created in Ginesys
+                # in a prior run. Try GetAdhocList first to retrieve the actual transfer details.
+                transfer_code_recovered = None
+                transfer_number_recovered = None
                 remote = client.find_existing_document(doc, dc_code)
                 if remote and _has_remote_transfer(remote):
-                    save_posting(
-                        doc["document_key"], status="SUCCESS",
-                        dc_code=remote.get("dc_code") or dc_code,
-                        dc_number=remote.get("dc_number") or dc_number,
-                        transfer_code=remote.get("transfer_code"),
-                        transfer_number=remote.get("transfer_number"),
-                        error="Transfer Out already existed in Ginesys (duplicate documentNo detected); recovered from GetAdhocList.",
+                    transfer_code_recovered = remote.get("transfer_code")
+                    transfer_number_recovered = remote.get("transfer_number")
+                    recovery_note = "Transfer Out already existed; recovered transfer details from GetAdhocList."
+                else:
+                    # GetAdhocList did not return the linked SI — this is common when the DC
+                    # list row does not include the SI reference. The duplicate error itself
+                    # is conclusive proof that the SI exists, so mark it SUCCESS and flag
+                    # for manual transfer-number lookup in Ginesys if needed.
+                    recovery_note = (
+                        f"Transfer Out for documentNo '{doc['reference']}' already existed in Ginesys "
+                        "(confirmed by duplicate-documentNo rejection). Transfer number could not be "
+                        "retrieved automatically — verify the Transfer Out number in Ginesys if required."
                     )
-                    return _row_from_state(doc, get_posting(doc["document_key"])), client.calls
-                # Could not find the existing SI — surface a clearer error for manual review.
-                raise GinesysError(
-                    f"SI/Save rejected documentNo '{doc['reference']}' as a duplicate, but the "
-                    "existing Transfer Out could not be located in GetAdhocList. "
-                    "Please find and record the Transfer Out number in Ginesys manually, "
-                    "then mark this document as done.",
-                    inv_exc.status_code, inv_exc.body,
-                ) from inv_exc
+                save_posting(
+                    doc["document_key"], status="SUCCESS",
+                    dc_code=dc_code, dc_number=dc_number,
+                    transfer_code=transfer_code_recovered,
+                    transfer_number=transfer_number_recovered,
+                    error=recovery_note,
+                )
+                return _row_from_state(doc, get_posting(doc["document_key"])), client.calls
             raise
         save_posting(
             doc["document_key"], status="SUCCESS", payload_hash=invoice.get("payload_hash"),
