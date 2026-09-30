@@ -299,6 +299,26 @@ def _post_single_document(doc: dict, config: AppConfig, operator: dict | None = 
             status = "AUTH_FAILED"
         else:
             last_endpoint = client.calls[-1].get("endpoint", "") if client.calls else ""
+            # ── Duplicate Document No. recovery ──────────────────────────────────────
+            # When SI/Save rejects because the documentNo already exists it PROVES the
+            # Transfer Out was previously created in Ginesys. Mark as SUCCESS so the
+            # document is never retried again. This check runs in the outer handler so
+            # it always fires regardless of inner-try control flow.
+            si_save_was_last = "/SI/Save" in last_endpoint
+            if si_save_was_last and _is_duplicate_document_no_error(exc):
+                save_posting(
+                    doc["document_key"], status="SUCCESS",
+                    dc_code=current.get("dc_code"), dc_number=current.get("dc_number"),
+                    transfer_code=current.get("transfer_code"),
+                    transfer_number=current.get("transfer_number"),
+                    error=(
+                        f"Transfer Out for documentNo '{doc.get('reference')}' already existed in "
+                        "Ginesys (confirmed by duplicate-documentNo rejection at SI/Save). "
+                        "Marked SUCCESS automatically. Verify Transfer Out number in Ginesys if needed."
+                    ),
+                )
+                return _row_from_state(doc, get_posting(doc["document_key"])), client.calls
+            # ─────────────────────────────────────────────────────────────────────────
             if "/DC/GetAdhocList" in last_endpoint:
                 status = "DC_CREATED" if current.get("dc_code") else "RECOVERY_CHECK_FAILED"
                 save_posting(
