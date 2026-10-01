@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
+import logging
 import os
 import re
+import time
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,6 +16,8 @@ from dotenv import load_dotenv
 from openpyxl import load_workbook
 
 from utils import canonical, clean_text
+
+_log = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent
 MASTER_DIR = ROOT / "Master"
@@ -42,6 +49,15 @@ CAPTURED_AVAILABLE_SITE_CODES = [
     1018, 1019, 1020, 1021, 1022,
     1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1067,
 ]
+
+# ---------------------------------------------------------------------------
+# Google Sheets SITE_MASTER cache
+# ---------------------------------------------------------------------------
+# Set GINESYS_SITE_MASTER_GSHEET_URL in your .env to the Google Sheet URL.
+# The sheet must be shared as "Anyone with the link can view".
+# The CSV export is cached in-memory for GSHEET_CACHE_TTL_SECONDS.
+_GSHEET_CACHE: tuple[float, list[list[str]]] | None = None  # (timestamp, rows)
+GSHEET_CACHE_TTL_SECONDS = 300  # 5 minutes
 
 
 def _reload_env() -> None:
@@ -180,6 +196,43 @@ def _load_webapi_overrides() -> dict[str, dict]:
     return {canonical(k): v for k, v in data.items() if isinstance(v, dict)}
 
 
+def _gsheet_csv_url(raw_url: str) -> str:
+    """Convert any Google Sheets share/edit URL to its CSV export URL."""
+    m = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", raw_url)
+    if not m:
+        return raw_url
+    sheet_id = m.group(1)
+    gid_m = re.search(r"[#&?]gid=(\d+)", raw_url)
+    gid = gid_m.group(1) if gid_m else "0"
+    return f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+
+
+def _load_gsheet_site_rows() -> list[list[str]] | None:
+    """Fetch SITE_MASTER rows from Google Sheets (cached 5 min). Returns None on failure."""
+    global _GSHEET_CACHE
+    gsheet_url = clean_text(os.getenv("GINESYS_SITE_MASTER_GSHEET_URL"))
+    if not gsheet_url:
+        return None
+    now = time.monotonic()
+    if _GSHEET_CACHE is not None:
+        cached_at, cached_rows = _GSHEET_CACHE
+        if now - cached_at < GSHEET_CACHE_TTL_SECONDS:
+            return cached_rows
+    try:
+        csv_url = _gsheet_csv_url(gsheet_url)
+        req = urllib.request.Request(csv_url, headers={"User-Agent": "odoo-ginesys-automation/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            text = resp.read().decode("utf-8-sig")
+        reader = csv.reader(io.StringIO(text))
+        rows = [row for row in reader]
+        _GSHEET_CACHE = (now, rows)
+        _log.info("SITE_MASTER loaded from Google Sheets (%d rows incl. header)", len(rows))
+        return rows
+    except Exception as exc:  # noqa: BLE001
+        _log.warning("Failed to load SITE_MASTER from Google Sheets: %s — falling back to local Excel", exc)
+        return None
+
+
 def _load_site_details() -> tuple[dict[str, dict], dict[int, dict]]:
     """Load optional GSTIN/site metadata exported separately by Ginesys."""
     if not SITE_DETAILS_FILE.exists():
@@ -290,10 +343,23 @@ def load_config() -> AppConfig:
         site_details_by_name, site_details_by_code = _load_site_details()
         sites: dict[str, Site] = {}
         missing_gstin_sites: list[str] = []
-        sws = wb["SITE_MASTER"]
-        site_headers = [clean_text(c.value) for c in sws[1]]
-        index = {h: i for i, h in enumerate(site_headers)}
-        for cells in sws.iter_rows(min_row=2, values_only=True):
+
+        # Prefer Google Sheets; fall back to local SITE_MASTER sheet in the Excel
+        gsheet_rows = _load_gsheet_site_rows()
+        if gsheet_rows and len(gsheet_rows) >= 2:
+            site_headers = [clean_text(v) for v in gsheet_rows[0]]
+            index = {h: i for i, h in enumerate(site_headers)}
+            raw_site_rows: list[Any] = gsheet_rows[1:]
+            _source = "Google Sheets"
+        else:
+            sws = wb["SITE_MASTER"]
+            site_headers = [clean_text(c.value) for c in sws[1]]
+            index = {h: i for i, h in enumerate(site_headers)}
+            raw_site_rows = list(sws.iter_rows(min_row=2, values_only=True))
+            _source = "local Excel"
+        _log.debug("Parsing SITE_MASTER from %s (%d data rows)", _source, len(raw_site_rows))
+
+        for cells in raw_site_rows:
             def site_value(*headers: str):
                 for header in headers:
                     column = index.get(header)
@@ -314,7 +380,7 @@ def load_config() -> AppConfig:
             site_detail = site_details_by_name.get(canonical(name)) or site_details_by_code.get(code) or {}
             state = clean_text(override.get("state")) or clean_text(site_value("State Code", "State")) or _infer_state(name, state_overrides)
             state = state.upper() if state else None
-            gstin = clean_text(override.get("gstin")) or clean_text(site_value("GSTIN", "Destination GSTIN")) or clean_text(site_detail.get("gstin")) or default_counterparty_gstin
+            gstin = clean_text(override.get("gstin")) or clean_text(site_value("GSTIN", "Destination GSTIN", "GST")) or clean_text(site_detail.get("gstin")) or default_counterparty_gstin
             gst_state = clean_text(override.get("gst_state_code")) or clean_text(site_value("GST State Code"))
             if gst_state.isdigit():
                 gst_state = gst_state.zfill(2)
