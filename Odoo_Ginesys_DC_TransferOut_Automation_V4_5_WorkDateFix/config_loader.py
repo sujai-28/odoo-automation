@@ -57,7 +57,7 @@ CAPTURED_AVAILABLE_SITE_CODES = [
 # The sheet must be shared as "Anyone with the link can view".
 # The CSV export is cached in-memory for GSHEET_CACHE_TTL_SECONDS.
 _GSHEET_CACHE: tuple[float, list[list[str]]] | None = None  # (timestamp, rows)
-GSHEET_CACHE_TTL_SECONDS = 300  # 5 minutes
+GSHEET_CACHE_TTL_SECONDS = 30  # 30 seconds — reduced from 5 min for near-immediate store updates
 
 
 def _reload_env() -> None:
