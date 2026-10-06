@@ -678,52 +678,65 @@ def process():
 
         app.config["_current_warehouse"] = warehouse
 
-        # Prepare outputs
-        buf_combined = io.BytesIO()
-        with pd.ExcelWriter(buf_combined, engine="openpyxl") as writer:
-            has_written = False
-            if isinstance(out_df, dict):
+        # Produce separate External (Sales Orders) and Internal (Transfers) files
+        # for ALL warehouses including Bagalur, plus a combined file.
+        ext_data = None
+        int_data = None
+
+        if isinstance(out_df, dict):
+            # --- External: Sales Orders + Analytic Distribution column ---
+            if "Sales Orders" in out_df and len(out_df["Sales Orders"]) > 0:
+                ext_df_out = out_df["Sales Orders"].copy()
+                # Add analytic distribution only to product lines (non-empty product ID rows)
+                analytic_val = '{"424": 100.0}'
+                ext_df_out["Order Lines/Analytic Distribution"] = ext_df_out["Order Lines/Product/ID"].apply(
+                    lambda v: analytic_val if str(v).strip() not in ("", "nan") else ""
+                )
+                buf_ext = io.BytesIO()
+                with pd.ExcelWriter(buf_ext, engine="openpyxl") as writer:
+                    ext_df_out.to_excel(writer, index=False, sheet_name="Sales Orders")
+                buf_ext.seek(0)
+                ext_data = buf_ext.getvalue()
+                out_df["Sales Orders"] = ext_df_out  # keep analytic col in combined file too
+
+            # --- Internal: Internal Transfers ---
+            if "Internal Transfers" in out_df and len(out_df["Internal Transfers"]) > 0:
+                buf_int = io.BytesIO()
+                with pd.ExcelWriter(buf_int, engine="openpyxl") as writer:
+                    out_df["Internal Transfers"].to_excel(writer, index=False, sheet_name="Internal Transfers")
+                buf_int.seek(0)
+                int_data = buf_int.getvalue()
+
+            # --- Combined: all sheets together ---
+            buf_combined = io.BytesIO()
+            with pd.ExcelWriter(buf_combined, engine="openpyxl") as writer:
+                has_written = False
                 for sname, df in out_df.items():
                     if len(df) > 0:
                         df.to_excel(writer, index=False, sheet_name=sname)
                         has_written = True
-            else:
-                out_df.to_excel(writer, index=False, sheet_name="Sales Orders")
-                has_written = True
-            if not has_written:
-                pd.DataFrame().to_excel(writer, index=False, sheet_name="Orders")
-        buf_combined.seek(0)
-        app.config["_output"] = buf_combined.getvalue()
-
-        # External output
-        if isinstance(out_df, dict) and "Sales Orders" in out_df and len(out_df["Sales Orders"]) > 0:
-            buf_ext = io.BytesIO()
-            with pd.ExcelWriter(buf_ext, engine="openpyxl") as writer:
-                out_df["Sales Orders"].to_excel(writer, index=False, sheet_name="Sales Orders")
-            buf_ext.seek(0)
-            app.config["_output_external"] = buf_ext.getvalue()
-        elif not isinstance(out_df, dict):
-            app.config["_output_external"] = buf_combined.getvalue()
+                if not has_written:
+                    pd.DataFrame().to_excel(writer, index=False, sheet_name="Orders")
+            buf_combined.seek(0)
         else:
-            app.config["_output_external"] = None
+            # LFR / non-dict output: single file with analytic distribution column
+            out_df_copy = out_df.copy()
+            out_df_copy["Order Lines/Analytic Distribution"] = '{"424": 100.0}'
+            buf_combined = io.BytesIO()
+            with pd.ExcelWriter(buf_combined, engine="openpyxl") as writer:
+                out_df_copy.to_excel(writer, index=False, sheet_name="Sales Orders")
+            buf_combined.seek(0)
+            ext_data = buf_combined.getvalue()
 
-        # Internal output
-        if isinstance(out_df, dict) and "Internal Transfers" in out_df and len(out_df["Internal Transfers"]) > 0:
-            buf_int = io.BytesIO()
-            with pd.ExcelWriter(buf_int, engine="openpyxl") as writer:
-                out_df["Internal Transfers"].to_excel(writer, index=False, sheet_name="Internal Transfers")
-            buf_int.seek(0)
-            app.config["_output_internal"] = buf_int.getvalue()
-        else:
-            app.config["_output_internal"] = None
-
-        app.config["_stats"]  = stats
-        
-        # Save per-user output to ensure session isolation
-        ext_data = buf_ext.getvalue() if 'buf_ext' in locals() and buf_ext else None
-        int_data = buf_int.getvalue() if 'buf_int' in locals() and buf_int else None
         comb_data = buf_combined.getvalue()
-        
+
+        app.config["_output"]          = comb_data
+        app.config["_output_external"] = ext_data
+        app.config["_output_internal"] = int_data
+        app.config["_stats"]           = stats
+
+        # Save per-user output so each logged-in user gets their own separate files.
+        # This ensures separate Internal / External downloads work for ALL warehouses (Bagalur included).
         set_user_output(warehouse, comb_data, ext_data, int_data, stats)
         app.config["_output"] = comb_data
 
