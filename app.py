@@ -154,28 +154,33 @@ def process_files(pl_bytes, cdb_bytes, prod_bytes, ebo_type="Auto", warehouse="B
 
     logs = []
 
+    # ── Warehouse lookup maps ──────────────────────────────────────────────────
+    # State used to distinguish internal (same-state) vs external (out-of-state).
     WH_STATE_MAP = {
         "bhiwandi": "MH",
         "kolkata":  "WB",
         "gurgaon":  "HR",
         "bagalur":  "TN"
     }
+    # External (Sales Orders) → Warehouse column
     WH_CODE_MAP = {
-        "bhiwandi": "TSPL-BHIWANDI",
-        "kolkata":  "TSPL-KOLKATA",
-        "gurgaon":  "TSPL-GURGAON",
+        "bhiwandi": "Instakart Maharastra",
+        "kolkata":  "Instakart West Bengal",
+        "gurgaon":  "Instakart Haryana",
         "bagalur":  "TSPL-HO WH1"
     }
+    # Internal Transfers → Source Location
     WH_SOURCE_LOC_MAP = {
-        "bhiwandi": "BHIWANDI/STOCK",
-        "kolkata":  "KOLKATA/STOCK",
-        "gurgaon":  "GURGAON/STOCK",
+        "bhiwandi": "ISTMH/Stock",
+        "kolkata":  "ISTWB/Stock",
+        "gurgaon":  "ISTHR/Stock",
         "bagalur":  "HOSUR/STOCK"
     }
+    # Internal Transfers → Operations Type
     WH_OPS_TYPE_MAP = {
-        "bhiwandi": "D2C WH - BHIWANDI",
-        "kolkata":  "D2C WH - KOLKATA",
-        "gurgaon":  "D2C WH - GURGAON",
+        "bhiwandi": "Instakart Maharastra: Internal Transfers",
+        "kolkata":  "Instakart West Bengal: Internal Transfers",
+        "gurgaon":  "Instakart Haryana: Internal Transfer",
         "bagalur":  "D2C WH - HOSUR"
     }
 
@@ -185,7 +190,9 @@ def process_files(pl_bytes, cdb_bytes, prod_bytes, ebo_type="Auto", warehouse="B
     wh_ops_type = WH_OPS_TYPE_MAP.get(wh_key, "D2C WH")
     target_state = WH_STATE_MAP.get(wh_key, "")
 
-    is_auto = (ebo_type == "Auto" or wh_key in ["bhiwandi", "kolkata", "gurgaon"])
+    # All warehouses now use Auto routing (state-based detection).
+    # Bagalur is also auto — the manual Internal/External step has been removed from the UI.
+    is_auto = True
 
     # Clean IDs for lookup
     def clean_id(x):
@@ -221,38 +228,29 @@ def process_files(pl_bytes, cdb_bytes, prod_bytes, ebo_type="Auto", warehouse="B
     # Store stock location: in Customer DB, user added 'Source Location' to hold store stock location (e.g. EBOWG/Stock, SQUAR/Stock)
     cdb_store_loc_col = find_col(cdb, "Source Location", "source location", "Destination Location", "destination location")
 
-    # Bagalur internal fuzzy fallback
+    # ── 3PL / Instakart name cleanup ──────────────────────────────────────────
+    # For Bhiwandi/Kolkata/Gurgaon, customer names in the Customer DB may include
+    # a trailing state entity like "Technosport Private Limited West Bengal".
+    # We want only the company name ("Technosport Private Limited") without any
+    # trailing state word(s), so the output matches the Odoo counterparty name.
+    _3PL_STATE_SUFFIXES = [
+        r"west\s+bengal", r"maharashtra", r"maharastra", r"haryana",
+        r"karnataka", r"tamil\s+nadu", r"uttar\s+pradesh", r"rajasthan",
+        r"gujarat", r"delhi", r"telangana", r"andhra\s+pradesh",
+        r"kerala", r"punjab", r"madhya\s+pradesh", r"odisha",
+    ]
+    _3PL_SUFFIX_RE = re.compile(
+        r"[:\s]+(?:" + "|".join(_3PL_STATE_SUFFIXES) + r")\s*$",
+        re.IGNORECASE,
+    )
+
+    def strip_3pl_state(name: str) -> str:
+        """Remove trailing state entity from 3PL company names."""
+        return _3PL_SUFFIX_RE.sub("", str(name).strip()).strip()
+
+    # Bagalur internal fuzzy fallback (kept for backward-compat; auto-routing
+    # now handles Bagalur the same way as other warehouses)
     store_map = {}
-    if wh_key == "bagalur" and not is_auto:
-        if cdb_store_name_col and cdb_store_loc_col:
-            for _, r in cdb.iterrows():
-                sn = str(r[cdb_store_name_col]).strip()
-                dl = str(r[cdb_store_loc_col]).strip()
-                if sn and dl and dl.lower() != "nan":
-                    store_map[sn] = dl
-
-        def get_significant_words(s):
-            words = set(re.findall(r'\w+', str(s).lower()))
-            words = {w for w in words if w not in ['ebo', 'store', 'stores', 'tspl', 'the', 'of', 'in', 'tn']}
-            replacements = {'tup': 'tiruppur'}
-            return {replacements.get(w, w) for w in words}
-
-        def find_best_destination(extracted, smap):
-            for sn, dest in smap.items():
-                if sn.lower() == extracted.lower():
-                    return dest
-            ext_words = get_significant_words(extracted)
-            best_dest = ""
-            max_overlap = 0
-            for sn, dest in smap.items():
-                sn_words = get_significant_words(sn)
-                overlap = len(ext_words.intersection(sn_words))
-                if overlap > max_overlap:
-                    max_overlap = overlap
-                    best_dest = dest
-            if max_overlap >= 1:
-                return best_dest
-            return ""
 
     external_rows = []
     internal_rows = []
@@ -283,28 +281,19 @@ def process_files(pl_bytes, cdb_bytes, prod_bytes, ebo_type="Auto", warehouse="B
         else:
             logs.append(f"Customer DB record not found for Delivery ID: '{del_id}' (Invoice: {inv_no}, Order: {channel_order})")
 
-        # Determine Internal vs External
-        if is_auto:
-            cust_val = str(cdb_row.get(cdb_cust_col, "")) if cdb_cust_col else ""
-            m = re.search(r'\(\s*([A-Za-z]{2})\s*\)', cust_val)
-            cust_state = m.group(1).upper() if m else ""
-            is_order_internal = (bool(cust_state) and cust_state == target_state)
-        else:
-            # Bagalur manual selection
-            is_order_internal = ebo_type in ["Internal", "Internal EBO"]
+        # Determine Internal vs External using state-based auto routing
+        cust_val = str(cdb_row.get(cdb_cust_col, "")) if cdb_cust_col else ""
+        m = re.search(r'\(\s*([A-Za-z]{2})\s*\)', cust_val)
+        cust_state = m.group(1).upper() if m else ""
+        is_order_internal = (bool(cust_state) and cust_state == target_state)
 
         if is_order_internal:
             internal_inv_set.add(inv_no)
             store_loc = str(cdb_row.get(cdb_store_loc_col, "")).strip() if cdb_store_loc_col else ""
             if not store_loc or store_loc.lower() == "nan":
-                if wh_key == "bagalur" and not is_auto:
-                    parts = channel_order.split('_')
-                    extracted_store = "_".join(parts[1:-1]).strip() if len(parts) >= 3 else channel_order.strip()
-                    store_loc = find_best_destination(extracted_store, store_map)
-                else:
-                    store_name = cdb_row.get(cdb_store_name_col, channel_order)
-                    logs.append(f"Internal store location not defined in Customer DB for '{store_name}' (Del ID: {del_id})")
-                    store_loc = ""
+                store_name = cdb_row.get(cdb_store_name_col, channel_order)
+                logs.append(f"Internal store location not defined in Customer DB for '{store_name}' (Del ID: {del_id})")
+                store_loc = ""
 
             for i, row in grp.iterrows():
                 is_first = (i == 0)
@@ -324,7 +313,10 @@ def process_files(pl_bytes, cdb_bytes, prod_bytes, ebo_type="Auto", warehouse="B
                 })
         else:
             external_inv_set.add(inv_no)
-            c_name = cdb_row.get(cdb_cust_col, "") if cdb_cust_col else ""
+            c_name = str(cdb_row.get(cdb_cust_col, "") if cdb_cust_col else "")
+            # Strip trailing state entity from 3PL names (e.g. "Technosport Private Limited West Bengal"
+            # → "Technosport Private Limited") so the Odoo counterparty name matches exactly.
+            c_name = strip_3pl_state(c_name)
             c_id = cdb_row.get(cdb_cust_id_col, "") if cdb_cust_id_col else ""
             d_name = cdb_row.get(cdb_deliv_col, "") if cdb_deliv_col else ""
             d_id = cdb_row.get(cdb_deliv_id_col, "") if cdb_deliv_id_col else ""
@@ -894,6 +886,31 @@ def api_ginesys_config():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/ginesys/reload-site-master", methods=["POST"])
+@login_required
+def api_ginesys_reload_site_master():
+    """Force-clear the SITE_MASTER Google Sheets cache and reload immediately.
+    Use this after editing the Google Sheet so changes are visible right away
+    without waiting for the 5-minute cache TTL to expire.
+    """
+    try:
+        # Invalidate the in-memory GSheet cache
+        ginesys_config_loader.invalidate_gsheet_cache()
+        # Immediately reload so we return the fresh site count/warnings
+        c = ginesys_config_loader.load_config()
+        errors, warnings = ginesys_config_loader.check_config(c)
+        return jsonify({
+            "success": True,
+            "message": f"Site master reloaded successfully. {len(c.sites)} active site(s) loaded.",
+            "siteCount": len(c.sites),
+            "warnings": warnings,
+            "errors": errors,
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route("/api/ginesys/test-connection", methods=["POST"])
 @login_required

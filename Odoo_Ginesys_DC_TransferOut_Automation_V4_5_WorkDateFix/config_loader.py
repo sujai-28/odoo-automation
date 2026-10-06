@@ -57,12 +57,21 @@ CAPTURED_AVAILABLE_SITE_CODES = [
 # The sheet must be shared as "Anyone with the link can view".
 # The CSV export is cached in-memory for GSHEET_CACHE_TTL_SECONDS.
 _GSHEET_CACHE: tuple[float, list[list[str]]] | None = None  # (timestamp, rows)
-GSHEET_CACHE_TTL_SECONDS = 30  # 30 seconds — reduced from 5 min for near-immediate store updates
+GSHEET_CACHE_TTL_SECONDS = 300  # 5 minutes — portal calls invalidate_gsheet_cache() for immediate forced reload
 
 
 def _reload_env() -> None:
     if ENV_FILE.exists():
         load_dotenv(dotenv_path=ENV_FILE, override=True)
+
+
+def invalidate_gsheet_cache() -> None:
+    """Force-clear the Google Sheets SITE_MASTER cache so the next
+    call to load_config() fetches a fresh copy immediately.
+    Call this from the portal after the admin uploads / edits the site master."""
+    global _GSHEET_CACHE
+    _GSHEET_CACHE = None
+    _log.info("SITE_MASTER Google Sheets cache invalidated — will re-fetch on next load_config() call")
 
 
 _reload_env()

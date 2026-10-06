@@ -122,6 +122,7 @@ def parse_files(paths: list[Path], config: AppConfig, combo_path: Path) -> dict:
     warnings: list[str] = []
     stats = {"files": 0, "source_lines": 0, "valid_lines": 0, "skipped_lines": 0, "combo_lines": 0}
     row_issues: list[str] = []
+    missing_sites: dict[str, int] = {}  # store_name -> first row number seen
 
     for path in paths:
         df = _read(path)
@@ -173,7 +174,11 @@ def parse_files(paths: list[Path], config: AppConfig, combo_path: Path) -> dict:
                 continue
             site = config.get_site(store_name)
             if site is None:
-                raise ValueError(f"No SITE_MASTER mapping for: {store_name}")
+                # Collect ALL missing stores — do not raise immediately.
+                if store_name not in missing_sites:
+                    missing_sites[store_name] = excel_row
+                stats["skipped_lines"] += 1
+                continue
 
             key = document_key(ref, site.code, doc_date, source_type)
             doc = grouped.get(key)
@@ -216,6 +221,17 @@ def parse_files(paths: list[Path], config: AppConfig, combo_path: Path) -> dict:
                     "factor": config.factor,
                 })
             stats["valid_lines"] += 1
+
+    # Raise all missing SITE_MASTER entries at once so the user can update them all in one go.
+    if missing_sites:
+        site_list = ", ".join(
+            f"'{name}' (first seen row {row})" for name, row in sorted(missing_sites.items())
+        )
+        raise ValueError(
+            f"SITE_MASTER mapping is missing for {len(missing_sites)} store(s). "
+            "Please add ALL of the following to SITE_MASTER and reload before retrying: "
+            + site_list
+        )
 
     if row_issues:
         shown = row_issues[:20]

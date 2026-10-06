@@ -540,8 +540,8 @@ body {
       </div>
     </div>
 
-    <!-- STEP 3: MOVEMENT TYPE (For EBO: Internal / External) -->
-    <div class="step-card hidden" id="step-movement">
+    <!-- STEP 3: MOVEMENT TYPE (For EBO: Internal / External) - HIDDEN, no longer used -->
+    <div class="step-card hidden" id="step-movement" style="display:none !important;">
       <div class="step-header">
         <div class="step-title-wrap">
           <span class="step-num">03</span>
@@ -1856,27 +1856,23 @@ function selectWarehouse(val, el) {
   const uploadStepNum = document.getElementById('upload-step-num');
   const autoInfo = document.getElementById('auto-routing-info');
 
-  if (val === 'Bagalur') {
-    state.eboType = null;
-    document.querySelectorAll('#grid-movement .option-item').forEach(c => c.classList.remove('selected'));
-    stepMv.classList.remove('hidden', 'disabled');
-    step3.classList.add('hidden');
-    uploadStepNum.textContent = '04';
-    if (autoInfo) autoInfo.style.display = 'none';
-    stepMv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  } else {
-    // Bhiwandi, Kolkata, Gurgaon - automatic state routing, no manual prompt
-    state.eboType = 'Auto';
-    stepMv.classList.add('hidden');
-    step3.classList.remove('hidden', 'disabled');
-    uploadStepNum.textContent = '03';
-    if (autoInfo) {
-      const stateMap = { 'Bhiwandi': 'Maharashtra (MH)', 'Kolkata': 'West Bengal (WB)', 'Gurgaon': 'Haryana (HR)' };
-      autoInfo.querySelector('span').textContent = `Automatic Routing Active for ${val}: Stores in ${stateMap[val] || val} will be routed as Internal Transfers, and out-of-state stores will be routed as External Sales Orders.`;
-      autoInfo.style.display = 'flex';
-    }
-    step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // ALL warehouses now use automatic state-based routing.
+  // The manual Internal/External step (step-movement) is never shown.
+  state.eboType = 'Auto';
+  if (stepMv) stepMv.classList.add('hidden');
+  step3.classList.remove('hidden', 'disabled');
+  uploadStepNum.textContent = '03';
+  if (autoInfo) {
+    const stateMap = {
+      'Bhiwandi': 'Maharashtra (MH)',
+      'Kolkata': 'West Bengal (WB)',
+      'Gurgaon': 'Haryana (HR)',
+      'Bagalur': 'Tamil Nadu (TN)'
+    };
+    autoInfo.querySelector('span').textContent = `Automatic Routing Active for ${val}: Stores in ${stateMap[val] || val} will be routed as Internal Transfers; out-of-state stores will be routed as External Sales Orders.`;
+    autoInfo.style.display = 'flex';
   }
+  step3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   checkSubmit();
 }
 
